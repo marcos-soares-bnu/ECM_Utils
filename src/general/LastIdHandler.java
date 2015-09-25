@@ -20,6 +20,8 @@ public class LastIdHandler {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+        	db.closeConn();
         }
     }
 }

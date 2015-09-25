@@ -93,4 +93,12 @@ public class DBUtil {
         }
     }
     
+    public void closeConn(){
+		try {
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+    
 }
