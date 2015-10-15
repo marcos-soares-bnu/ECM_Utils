@@ -1,17 +1,26 @@
 package output;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StreamGobbler extends Thread
 {
-    InputStream is;
+	InputStream is;
     String type;
     OutputStream os;
+    List<String> os_lines;
     
-    public StreamGobbler(InputStream is, String type)
+    public List<String> getOs_lines() {
+		return os_lines;
+	}
+	public void setOs_lines(List<String> os_lines) {
+		this.os_lines = os_lines;
+	}
+	public StreamGobbler(InputStream is, String type)
     {
         this(is, type, null);
     }
-    StreamGobbler(InputStream is, String type, OutputStream redirect)
+    public StreamGobbler(InputStream is, String type, OutputStream redirect)
     {
         this.is = is;
         this.type = type;
@@ -20,6 +29,9 @@ public class StreamGobbler extends Thread
     
     public void run()
     {
+    	//
+    	List<String> tmp_lines = new ArrayList<String>();  
+    	
         try
         {
             PrintWriter pw = null;
@@ -31,15 +43,27 @@ public class StreamGobbler extends Thread
             String line=null;
             while ( (line = br.readLine()) != null)
             {
-                if (pw != null)
-                    pw.println(line);
-                System.out.println(type + ">" + line);    
+            	if (line.length() > 0)
+            	{
+	            	//add to list...
+	        		tmp_lines.add(line);
+	            	
+	                if (pw != null)
+	                    pw.println(line);
+	                
+	                if (type == "ERR")
+	                	System.out.println(type + ">" + line);
+            	}
             }
+            //set list...
+    		this.setOs_lines(tmp_lines);
+            
             if (pw != null)
                 pw.flush();
-        } catch (IOException ioe)
-            {
+        }
+        catch (IOException ioe)
+        {
             ioe.printStackTrace();  
-            }
+        }
     }
 }
