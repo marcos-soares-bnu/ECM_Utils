@@ -3,6 +3,8 @@ package main;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.RoundingMode;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -11,7 +13,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+//import java.util.concurrent.TimeUnit;
+
+
 
 import output.StreamGobbler;
 
@@ -26,7 +30,7 @@ public class ICCcheck {
 	public static String CMD_C0N 	= "CMD /C WMIC /NODE:@HOST OS GET localdatetime";
 	public static String CMD_C1N 	= "CMD /C WMIC /NODE:@HOST SERVICE WHERE \"name like '%@SERVICE%'\" GET name,state";
 	public static String CMD_C2N 	= "CMD /C WMIC /NODE:@HOST PATH Win32_Process WHERE \"name like '%@PROCESS%'\" GET processid";
-	public static String CMD_C3N 	= "CMD /C WMIC /NODE:@HOST DATAFILE WHERE \"extension='log' and drive='@DRIVE:' and name like '%.@PID.log'\" GET name";
+	public static String CMD_C3N 	= "CMD /C WMIC /NODE:@HOST DATAFILE WHERE \"extension='log' and drive='@DRIVE:' and name like '%@DATEOS%.@PID.log'\" GET name";
 	public static String CMD_C3S 	= "drive='@DRIVE:' and name";
 	public static String CMD_C3R 	= "drive='@DRIVE:' and path='@PATH' and name";
 	//
@@ -53,7 +57,7 @@ public class ICCcheck {
 	//	---ATTOFFILES[5] = Percent of Error: 	(Type in LogFile)
 	//
 	public static List<String[]> LISTOFFILES	= new ArrayList<String[]>();
-	public static String 		SEARCH_LINE		= "@TYPE: @HOST DOKuStarClusterNode @PID";
+	public static String 		SEARCH_LINE		= "@TYPE: @HOST";
 	public static int[] 		COUNTTYPES		= new int[4];
 	//
 	//	---COUNTTYPES[0] = Count of Fine: 		(Type in LogFile)
@@ -68,13 +72,11 @@ public class ICCcheck {
     {
     	if (args.length < 5)
         {
-            System.out.println("USAGE: java -jar ICCcheck \"Host(Server)\" \"Service(Chk)\" \"Process(Chk)\" \"Drive[:\\path](search Logs)\" \"[-x][-v][-n][-o][-h]\"");
+            System.out.println("USAGE: java -jar ICCcheck \"Host(Server)\" \"Service(Chk)\" \"Process(Chk)\" \"Drive[:\\path](search Logs)\" \"[-x][-v][-n][-o]\"");
             System.out.println(" NOTE: \"[-x] = Check SAP E_-X_traction Link Processes. \"");
             System.out.println("       \"[-v] = Check O_-V_erview Issues - DOKuStar Load Manager. \"");
             System.out.println("       \"[-n] = Check Cluster _-N_odes Issues - DOKuStar Load Manager. \"");
             System.out.println("       \"[-o] = Check _-O_perations Issues - DOKuStar Load Manager. \"");
-            System.out.println("       \"[-h] = Check _-H_istory Issues - DOKuStar Load Manager. \"");
-            System.out.println("       \"[-full] = Check All Issues - DOKuStar. \"");
             System.exit(1);
         }
     	else
@@ -108,8 +110,8 @@ public class ICCcheck {
         	chkSERVICE();
 
             //*** MPS - SET ALL DOKuStar PROCESS AND LOGs **************************************
-        	CMD_C2N	= CMD_C2N.replace("@PROCESS", "cmd"); //"DOKuStar");
-        	setLISTOFFILES();
+        	String aux_c2n	= CMD_C2N.replace("@PROCESS", "notepad"); //"DOKuStar");
+        	setLISTOFFILES(aux_c2n);
 
         	//Check Log Files found...
         	if (LISTOFFILES.size() <= 0)
@@ -123,7 +125,6 @@ public class ICCcheck {
         	else if (PAR5.equals("-v"))	{ check_N(); }
         	else if (PAR5.equals("-n"))	{ check_N(); }
         	else if (PAR5.equals("-o"))	{ check_O(); }
-        	else if (PAR5.equals("-h"))	{ check_H(); }
         } 
         catch (Throwable t)
         {
@@ -151,7 +152,22 @@ public class ICCcheck {
     	DOKuStarExtractionServer.exe                    13692
     	DOKuStarExtractionServer.exe                    12880
     	DOKuStarExtractionServer.exe                    8116
-    	DOKuStarExtractionServer.exe                    8184    	
+    	DOKuStarExtractionServer.exe                    8184
+    	----------------------------
+    	FINDSTR pelos SAP Ext. Link
+    	----------------------------
+    	UK_PRD_CLNT006--disabled
+    	DE_GPA_CLNT100_V11
+    	PL_GPA_CLNT100
+    	----------------------------
+    	FINDSTR pelos SAP Dow. Link
+    	----------------------------
+    	DE_GPA_CLNT100_V11...
+    	UK_PRD_CLNT006
+    	UK_PRD_CLNT006-PO
+    	PL_GPA_CLNT100-PO
+    	PL_GPA_CLNT100
+    	DE_GPA_CLNT100_V11    	
 */    	
     }
 
@@ -168,6 +184,10 @@ public class ICCcheck {
 
     public static void check_O() throws Throwable
     {
+    	//Test MPS 20/10...
+    	copyBatchFind("-o", ".ope");
+    	
+    	
 /*    	
     	DOKuStarLoadManager.exe                         10212
 */
@@ -175,12 +195,13 @@ public class ICCcheck {
     
     public static void check_H() throws Throwable
     {
+    	
     }
     
 //*********************************************************************************************************************
 //
-//    
-//    
+//
+//
 //*** AUX  PROCS ******************************************************************************************************
 
     public static void callCMD(String cmd) {
@@ -285,16 +306,22 @@ public class ICCcheck {
     }
     
     //LocalDateTime=20151009083853.234000-180
+    //CMD_C3N - DATAFILE '%@DATEOS%.@PID.log'
+    //
     public static void getOSLocalTime() throws Throwable
     {
     	String dateInString 		= "";
 		SimpleDateFormat formatter 	= new SimpleDateFormat("yyyyMMddHHmmss");
+		SimpleDateFormat formatte2 	= new SimpleDateFormat("yyyy-MM-dd");
     	//
     	tmp_linesi 	= getOutList(CMD_C0N);
     	if (tmp_linesi.size() >= 1)
     	{
     		dateInString = tmp_linesi.get(1).substring(0, 14);
-    		OS_DTIME = formatter.parse(dateInString);			
+    		OS_DTIME = formatter.parse(dateInString);
+    		//
+    		String format = formatte2.format(OS_DTIME);		
+        	CMD_C3N 	= CMD_C3N.replace("@DATEOS", format);
     	}
     }
     
@@ -320,7 +347,7 @@ public class ICCcheck {
     	}
     }
     
-    public static void setLISTOFFILES() throws Throwable
+    public static void setLISTOFFILES(String aux_c2n) throws Throwable
     {
     	String aux_cmd 				= "";
     	String aux_pid 				= "";
@@ -333,10 +360,10 @@ public class ICCcheck {
 
     	//*** MPS - Debug SysOut ***********************************************************
     	System.out.println("*******************************************************************************");
-    	System.out.println("*** Debug CMD_C2N 	= " + CMD_C2N);
+    	System.out.println("*** Debug aux_c2n 	= " + aux_c2n);
     	System.out.println("*******************************************************************************");
     	//
-    	tmp_linesi = getOutList	(CMD_C2N);
+    	tmp_linesi = getOutList	(aux_c2n);
     	for (int i = 1; i < tmp_linesi.size(); i++)
     	{
     		//
@@ -389,12 +416,11 @@ public class ICCcheck {
     	String[] aux_cmd 			= new String[4];
     	String aux_filename 		= "";
     	String aux_pathname			= "";
-		String aux_search 			= "";
+		String aux_search 			= SEARCH_LINE;
     	//
     	
     	for (String[] attFile : LISTOFFILES)
     	{
-    		aux_search		= SEARCH_LINE.replace("@PID", attFile[0].trim());
     		//
     		aux_pathname 	= attFile[1].trim(); 
     		aux_filepath 	= aux_pathname.replace("\\", "/").split("/");
@@ -453,6 +479,36 @@ public class ICCcheck {
             	aux_search = SEARCH_LINE;
             	aux_output = "\\percErrorM-5\\ @STP5M";
         	}
+        	//Check Operation Tab...
+        	else if (type.equals("-o"))
+        	{
+        		if (aux_filename.toLowerCase().indexOf("dokustarloadmanager") >= 0)
+        		{
+        			//Read All LOG and split into fields to check...
+        			String[] info;
+        			String aux_text = new String(Files.readAllBytes(Paths.get(aux_filename)));
+        			info = aux_text.split("[[");
+        			//
+        			for (String s : info) {
+						
+        				if (s.indexOf("State=\"Processing\"") >= 0)
+        				{
+        					//Faz o tratamento...
+        					String[] infoi = s.split("=");
+        					for (String si : infoi) {
+
+        						String test = si;
+        						
+							}
+        				}
+					}
+        			
+        		}
+        		
+        	
+        		
+        	}
+        	//End if Types...
 		}
         //
         writer.close();

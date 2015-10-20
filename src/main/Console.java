@@ -9,7 +9,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+//import java.util.Map;
 
 import javax.swing.JOptionPane;
 
@@ -74,7 +74,7 @@ public class Console {
 	    System.out.println(command);
 	    
 	    ProcessBuilder builder = new ProcessBuilder(command);
-	    Map<String, String> environ = builder.environment();
+//	    Map<String, String> environ = builder.environment();
 	    builder.directory(new File(System.getenv("temp")));
 
 	    System.out.println("Directory : " + System.getenv("temp") );
@@ -144,14 +144,14 @@ public class Console {
 		   ----------------------------------------------------------------------------------			 
 		 */
 		
-		String srvName = "\\\\MLGMUC00APP571";
-		String srvPath = "D:\\IAS_Monitoring\\APP_Dev\\SCHEDScripts\\";
-		String sqlServ = "\"SELECT * FROM [FISPixCoreINTERN].[dbo].[BatchList]\""; 
-		String batPath = "sqlcmd -U fisadmin -P FIS!admin -S mlgmuc00csql011\\sql2 -Q " + sqlServ;
+//		String srvName = "\\\\MLGMUC00APP571";
+//		String srvPath = "D:\\IAS_Monitoring\\APP_Dev\\SCHEDScripts\\";
+//		String sqlServ = "\"SELECT * FROM [FISPixCoreINTERN].[dbo].[BatchList]\""; 
+//		String batPath = "sqlcmd -U fisadmin -P FIS!admin -S mlgmuc00csql011\\sql2 -Q " + sqlServ;
 		
 		//----------------------------------------------------------------------------------			 
-    	String command = "cmd /c start /wait " + //   
-    					srvPath + "psexec " + srvName + " " + batPath;
+//    	String command = "cmd /c start /wait " + //   
+//    					srvPath + "psexec " + srvName + " " + batPath;
 
     	//Call the .bat and show output
     	try {
