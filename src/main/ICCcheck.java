@@ -17,6 +17,7 @@ import java.util.Set;
 
 
 
+
 import output.StreamGobbler;
 
 public class ICCcheck {
@@ -36,7 +37,7 @@ public class ICCcheck {
 	//
 	public static Date OS_DTIME;
 	public static Date LOG_DTIME;
-	public static int MAX_DTDIFF	= 10; //Max diff. between OS_DTIME, LOG_DTIME in minutes 
+	public static int MAX_DTDIFF	= 3; //Max diff. between OS_DTIME, LOG_DTIME in minutes 
 	public static String HOST 		= "";
 	public static String SERVICE 	= "";
 	public static String PROCESS 	= "";
@@ -68,7 +69,7 @@ public class ICCcheck {
 
 	
 	
-    public static void main(String args[])
+    public static void main(String args[]) throws Throwable
     {
     	if (args.length < 5)
         {
@@ -122,12 +123,14 @@ public class ICCcheck {
         	
         	//Select Out File depending PAR5...
         	if 		(PAR5.equals("-x"))	{ check_X(); }
-        	else if (PAR5.equals("-v"))	{ check_N(); }
+        	else if (PAR5.equals("-v"))	{ check_V(); }
         	else if (PAR5.equals("-n"))	{ check_N(); }
         	else if (PAR5.equals("-o"))	{ check_O(); }
+        	else						{ check_ALL(); }
         } 
         catch (Throwable t)
         {
+    		writeExitErrOut("Throwable", t.getStackTrace().toString());
         	t.printStackTrace();
         }
     }
@@ -171,32 +174,35 @@ public class ICCcheck {
 */    	
     }
 
-    
+
+    public static void check_V() throws Throwable
+    {
+    	
+    }
+
+    	
     public static void check_N() throws Throwable
     {
-/*    	
-    	DOKuStarClusterNode.exe                         14296
-    	DOKuStarClusterNode.exe                         11780
-    	DOKuStarClusterNode.exe                         14004
-    	DOKuStarClusterNode.exe                         5756
-*/
+    	//Test MPS 20/10...
+    	copyBatchFind("-n", ".cln");
     }
 
     public static void check_O() throws Throwable
     {
     	//Test MPS 20/10...
     	copyBatchFind("-o", ".ope");
-    	
-    	
-/*    	
-    	DOKuStarLoadManager.exe                         10212
-*/
     }
     
-    public static void check_H() throws Throwable
+
+    public static void check_ALL() throws Throwable
     {
-    	
+    	//Test MPS Soon...
+    	copyBatchFind("-x", ".ext");
+    	copyBatchFind("-v", ".ove");
+    	copyBatchFind("-n", ".ove");
+    	copyBatchFind("-o", ".ope");
     }
+    
     
 //*********************************************************************************************************************
 //
@@ -410,7 +416,7 @@ public class ICCcheck {
     public static void copyBatchFind(String type, String ext) throws Throwable
     {
     	FileWriter writer 			= new FileWriter(FILE_TMP + ext, true);
-    	String aux_output 			= "\\percErrorM-5\\ @STP5M";
+    	String aux_output 			= "";
     	//
     	String[] aux_filepath;
     	String[] aux_cmd 			= new String[4];
@@ -430,6 +436,7 @@ public class ICCcheck {
         	//Copy remote files to local...
         	if (type.equals("-copy"))
         	{
+            	aux_output = "\\percErrorM-5\\ @STP5M";
         		aux_search = aux_search.replace("@TYPE", "Error");
         		//
         		aux_cmd[0] = "COPY " + "\\\\" + HOST + "\\" + aux_pathname.replace(":", "$") + " /Y";
@@ -466,43 +473,106 @@ public class ICCcheck {
         		attFile[5] = df.format(vtotType[3]);    		
         		
                 //*** MPS - Write type File *********************************************************
-        		String s = 	aux_output + 
-        	    			(" \\PID\\ " + attFile[0])		+
-        	    			(" \\LOG\\ " + attFile[1])		+
-        	    			(" \\%Fine\\ " + attFile[2])	+
-        	    			(" \\%Info\\ " + attFile[3])	+
-        	    			(" \\%Warn\\ " + attFile[4])	+
-        	    			(" \\%Erro\\ " + attFile[5]);
+        		String s = 	aux_output 		+ 
+        	    			(" \\PID\\ " 	+ attFile[0])	+
+        	    			(" \\LOG\\ " 	+ attFile[1])	+
+        	    			(" \\%Fine\\ " 	+ attFile[2])	+
+        	    			(" \\%Info\\ " 	+ attFile[3])	+
+        	    			(" \\%Warn\\ " 	+ attFile[4])	+
+        	    			(" \\%Erro\\ " 	+ attFile[5]);
         		//
         		writer.write(s + "\n");
             	//
             	aux_search = SEARCH_LINE;
             	aux_output = "\\percErrorM-5\\ @STP5M";
         	}
-        	//Check Operation Tab...
-        	else if (type.equals("-o"))
+        	//Check Operation Tab... OR Check Cluster Nodes Tab...
+        	else if ( (type.equals("-o")) || (type.equals("-n")) )
         	{
-        		if (aux_filename.toLowerCase().indexOf("dokustarloadmanager") >= 0)
+        		String file_prefix	= "";
+        		if (type.equals("-o"))
+        			file_prefix		= "dokustarloadmanager";
+        		else
+        			file_prefix		= "dokustarclusternode";
+        		//
+            	aux_output 			= "\\timeProcessingM-10\\ TRUE";
+            	String aux_state 	= "Processing";
+            	String aux_node		= "";
+            	String aux_client	= "";
+            	String aux_label	= "";
+            	String aux_start	= "";
+            	String aux_tottime	= "";
+            	//
+            	String aux_optname	= "";
+            	String aux_name		= "";
+            	//
+        		if (aux_filename.toLowerCase().indexOf(file_prefix) >= 0)
         		{
         			//Read All LOG and split into fields to check...
-        			String[] info;
+        			String[] info = null;
         			String aux_text = new String(Files.readAllBytes(Paths.get(aux_filename)));
-        			info = aux_text.split("[[");
+        			//
+            		if (type.equals("-n"))
+            		{
+    					//Set aux_name...
+            			info = aux_text.split("\\[\\[ClusterNode settings:");
+            			if (info.length >= 1)
+            				aux_name	= info[1].substring(info[1].indexOf("Name=") , info[1].indexOf("Description=")).replace("Name=", "").replace("\"", "").replace("\n", "").trim();
+            		}
+            		//
+        			info = aux_text.split("\\[\\[Operation:");
         			//
         			for (String s : info) {
 						
         				if (s.indexOf("State=\"Processing\"") >= 0)
         				{
-        					//Faz o tratamento...
-        					String[] infoi = s.split("=");
-        					for (String si : infoi) {
-
-        						String test = si;
-        						
-							}
+        					//Set main fields...
+        					aux_node 		= s.substring(s.indexOf("ClusterNodeID=") , s.indexOf("Tag=")).replace("ClusterNodeID=", "").replace("\"", "").replace("\n", "").trim();
+        					aux_client		= s.substring(s.indexOf("ClientID=") , 		s.indexOf("ClusterNodeID=")).replace("ClientID=", "").replace("\"", "").replace("\n", "").trim();
+        					aux_label		= s.substring(s.indexOf("Label=") , 		s.indexOf("HasFailed=")).replace("Label=", "").replace("\"", "").replace("\n", "").trim();
+        					aux_start		= s.substring(s.indexOf("StartTime=") ,		s.indexOf("TotalTime=")).replace("StartTime=", "").replace("\"", "").replace("\n", "").trim(); 
+        					aux_tottime 	= s.substring(s.indexOf("TotalTime=") , 	s.indexOf("MethodName=")).replace("TotalTime=", "").replace("\"", "").replace("\n", "").trim();
+        					aux_optname		= s.substring(s.indexOf("OperationTypeName=") , s.indexOf("ServiceType=")).replace("OperationTypeName=", "").replace("\"", "").replace("\n", "").trim();
+        					//
+        					double totime 	= 0;
+        					int hours 		= Integer.parseInt(aux_tottime.substring(0, 2));
+        					int minutes		= Integer.parseInt(aux_tottime.substring(3, 5));
+        					int seconds		= Integer.parseInt(aux_tottime.substring(6, 8));
+        					//
+        					try 
+        					{ 
+        						totime = ( (double) hours * 60 );
+        						totime = totime	+ ( (double) minutes ); 
+        						totime = totime	+ ( (double) seconds / 60 ); 
+        					}
+        					catch(Exception ex)
+        					{ 
+        						totime = 0; 
+        					}
+        					
+        					String tag_print = " \\ClusterNode\\ ";
+        					if (type.equals("-n"))
+        					{ 
+        						aux_node = aux_optname; 
+        						tag_print = " \\Name\\ ";        						
+        					}
+        					
+        					//Write main fields / tottime > MAX_DTDIFF...
+        					if (totime > MAX_DTDIFF)
+        					{
+        		                //*** MPS - Write type File *********************************************************
+        		        		String sw =	aux_output 				+ 
+        		        	    			(" \\State\\ " 			+ aux_state)	+
+        		        	    			(	tag_print			+ aux_node)		+
+        		        	    			(" \\Client\\ " 		+ aux_client)	+
+        		        	    			(" \\Label\\ " 			+ aux_label)	+
+        		        	    			(" \\Started\\ " 		+ aux_start)	+
+        		        	    			(" \\tottime\\ " 		+ aux_tottime);
+        		        		//
+        		        		writer.write(sw + "\n");
+        					}
         				}
 					}
-        			
         		}
         		
         	
