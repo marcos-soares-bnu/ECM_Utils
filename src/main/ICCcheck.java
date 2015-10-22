@@ -42,6 +42,7 @@ public class ICCcheck {
 
 	public static Date OS_DTIME;
 	public static Date LOG_DTIME;
+	public static int MAX_PERERR	= 5; //Max percentage of erros in Logs files 
 	public static int MAX_DTDIFF	= 3; //Max diff. between OS_DTIME, LOG_DTIME in minutes 
 	public static String HOST 		= "";
 	public static String SERVICE 	= "";
@@ -91,7 +92,7 @@ public class ICCcheck {
     			PAR5 = args[4];
     		else
     		{
-    			if (PAR4.indexOf(":") > 0) 
+    			if ( (PAR4.indexOf(":") > 0) && (!PAR4.endsWith("\\")) )
     				PAR4 = PAR4 + "\\";
     		}
     	}
@@ -403,7 +404,7 @@ public class ICCcheck {
         	//Copy remote files to local...
         	if (type.equals("-copy"))
         	{
-            	aux_output 		= "\\percErrorM-5\\ @STP5M";
+            	aux_output 		= "\\percErrorM-" + MAX_PERERR + "\\ @STP5M";
         		aux_search 		= aux_search.replace("@TYPE", "Error");
 
         		aux_cmd[0] 		= "COPY " + "\\\\" + HOST + "\\" + aux_pathname.replace(":", "$") + " /Y";
@@ -446,7 +447,7 @@ public class ICCcheck {
         		writer.write(s + "\n");
 
             	aux_search 		= SEARCH_LINE;
-            	aux_output 		= "\\percErrorM-5\\ @STP5M";
+            	aux_output 		= "\\percErrorM-" + MAX_PERERR + "\\ @STP5M";
         	}
         	//Check Types (-o / -n / -v)...
         	else if ( (type.equals("-o")) || (type.equals("-n")) || (type.equals("-v")))
@@ -458,7 +459,7 @@ public class ICCcheck {
         		else
         			file_prefix		= "dokustarclusternode";
 
-            	aux_output 			= "\\timeProcessingM-10\\ TRUE";
+            	aux_output 			= "\\timeProcessingM-" + MAX_DTDIFF + "\\ TRUE";
             	String aux_state 	= "Processing";
             	String aux_node		= "";
             	String aux_client	= "";

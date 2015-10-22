@@ -52,7 +52,7 @@ public class StreamGobbler extends Thread
 	                    pw.println(line);
 	                
 	                if (type == "ERR")
-	                	System.out.println(type + ">" + line);
+	                	System.out.println(">>> " + type + ">" + line);
             	}
             }
             //set list...
