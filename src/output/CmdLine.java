@@ -19,6 +19,9 @@ public class CmdLine {
 
 	public List<String> getGetOutList() throws Throwable {
 
+		if (this.getOutList.size() > 0)
+			return this.getOutList;
+		
     	//Execute args command...
         Runtime rt = Runtime.getRuntime();
         Process proc = rt.exec(this.cmd);
@@ -55,7 +58,7 @@ public class CmdLine {
 		this.getOutList = getOutList;
 	}
 
-	public CmdLine(String cmd, List<String> getOutList) throws Throwable {
+	public CmdLine(String cmd) throws Throwable {
 		super();
 		this.cmd = cmd;
 		this.getOutList = this.getGetOutList();

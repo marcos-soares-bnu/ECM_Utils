@@ -16,6 +16,7 @@ import java.util.Set;
 //import java.util.concurrent.TimeUnit;
 
 import output.StreamGobbler;
+import output.CmdLine;
 
 public class ICCcheck {
 
@@ -75,6 +76,14 @@ public class ICCcheck {
 	
     public static void main(String args[]) throws Throwable
     {
+    	CmdLine test = new CmdLine("cmd /c dir");
+    	
+    	for (String s : test.getGetOutList()) {
+			
+    		System.out.println(s);
+		}
+    	
+    	
     	if (args.length < 4)
         {
             System.out.println("*** USAGE: java -jar ICCcheck \"Host(Server)\" \"Service(Chk)\" \"Process(Chk)\" \"Drive[:\\path](search Logs)\" \"[-x][-v][-n][-o]\"");
