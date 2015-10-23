@@ -64,9 +64,9 @@ public class CmdLine {
 		this.getOutList = this.getGetOutList();
 	}
 
-    public static void callCMD(String cmd) {
+    public void callCMD() {
         try {
-            Process p = Runtime.getRuntime().exec("cmd /c " + cmd);
+            Process p = Runtime.getRuntime().exec(this.cmd);
             p.waitFor();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

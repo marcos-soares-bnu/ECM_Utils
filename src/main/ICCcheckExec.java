@@ -16,9 +16,10 @@ import java.util.Set;
 //import java.util.concurrent.TimeUnit;
 
 import output.StreamGobbler;
-import output.CmdLine;
+import wmi.*;
+import checks.*;
 
-public class ICCcheck {
+public class ICCcheckExec {
 
 //*** VARs ************************************************************************************************************
 	
@@ -76,12 +77,43 @@ public class ICCcheck {
 	
     public static void main(String args[]) throws Throwable
     {
-    	CmdLine test = new CmdLine("cmd /c dir");
+//******************************************************************** TESTE    	
+//    	CmdLine test = new CmdLine("cmd /c dir");
+//    	
+//    	for (String s : test.getGetOutList()) {
+//			
+//    		System.out.println(s);
+//		}
+//    	WmiConsole wmi = new WmiConsole(args[0]);
+//    	Date dtest = wmi.getWmicLocalDateTime("yyyyMMddHHmmss");
+//    	System.out.println(dtest.toString());
+//    	
+    	WmiConsole wmi = new WmiConsole();
+    	wmi.setHost("localhost");
+    	wmi.setDrive("c");
+    	wmi.setExtension("log");
+    	wmi.setPath("\\\\Temp\\\\mps\\\\Trace\\\\DOKuStar_teste\\\\");
+//    	wmi.setName("%.log");
+//    	
+//    	for (String s : wmi.getWmicDataFileName()) {
+//			
+//    		System.out.println(s);
+//		}
     	
-    	for (String s : test.getGetOutList()) {
+    	wmi.setProcess("notepad");
+    	ICCcheckOverview icctest = new ICCcheckOverview(wmi, MAX_DTDIFF);
+    	
+    	for (String s[] : icctest.getLISTOFFILES()) {
 			
-    		System.out.println(s);
+    		System.out.println(s[1]);
 		}
+    	
+    	icctest.copyListLocal();
+    	icctest.checkOverview(FILE_TMP + ".ovw");
+    	
+    	System.out.println("Copiou!!!");
+    	
+//******************************************************************** TESTE    	
     	
     	
     	if (args.length < 4)
