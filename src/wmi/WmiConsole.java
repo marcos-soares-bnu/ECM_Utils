@@ -106,6 +106,9 @@ public class WmiConsole {
     	String dateInString 		= "";
 		SimpleDateFormat formatter 	= new SimpleDateFormat(format);
 		
+		//*** MPS - debug
+		debugSysOut("getWmicLocalDateTime", "CMD /C WMIC /NODE:" + this.host + " OS GET localdatetime");
+		//***
 		CmdLine cmd = new CmdLine("CMD /C WMIC /NODE:" + this.host + " OS GET localdatetime");
 		
 		//Set local list from Wmic...
@@ -121,10 +124,13 @@ public class WmiConsole {
 			return null;
 	}
 
-	public List<String> getWmicServiceStatus() throws Throwable
+	public void getWmicServiceStatus() throws Throwable
 	{
 		List<String> serviceWmiList	= new ArrayList<String>();
 		
+		//*** MPS - debug
+		debugSysOut("getWmicServiceStatus", "CMD /C WMIC /NODE:" + this.host + " SERVICE WHERE \"name like '%" + this.service + "%'\" GET name,state");
+		//***
 		CmdLine cmd = new CmdLine("CMD /C WMIC /NODE:" + this.host + " SERVICE WHERE \"name like '%" + this.service + "%'\" GET name,state");
 		
 		//Set local list from Wmic...
@@ -134,13 +140,16 @@ public class WmiConsole {
 		{
 			serviceWmiList.add(s);
 		}
-		return serviceWmiList;
+		this.setGetWmiOutList(serviceWmiList);
 	}
 	
-	public List<String> getWmicProcessId() throws Throwable
+	public void getWmicProcessId() throws Throwable
 	{
 		List<String> processWmiList	= new ArrayList<String>();
 		
+		//*** MPS - debug
+		debugSysOut("getWmicProcessId", "CMD /C WMIC /NODE:" + this.host + " PATH Win32_Process WHERE \"name like '%" + this.process + "%'\" GET processid");
+		//***
 		CmdLine cmd = new CmdLine("CMD /C WMIC /NODE:" + this.host + " PATH Win32_Process WHERE \"name like '%" + this.process + "%'\" GET processid");
 		
 		//Set local list from Wmic...
@@ -150,10 +159,10 @@ public class WmiConsole {
 		{
 			processWmiList.add(s);
 		}
-		return processWmiList;
+		this.setGetWmiOutList(processWmiList);
 	}	
 	
-	public List<String> getWmicDataFileName() throws Throwable
+	public void getWmicDataFileName() throws Throwable
 	{
 		String aux_cmd = "";
 		List<String> processWmiList	= new ArrayList<String>();
@@ -161,7 +170,7 @@ public class WmiConsole {
 		if ( (this.drive.isEmpty()) || (this.extension.isEmpty()) || (this.name.isEmpty()) )
 		{
 			processWmiList.add("Drive OR Extension OR Name not Informed!");
-			return processWmiList;
+			return;
 		}
 			
 		if (this.path.isEmpty())
@@ -169,6 +178,9 @@ public class WmiConsole {
 		else
 			aux_cmd = "CMD /C WMIC /NODE:" + this.host + " DATAFILE WHERE \"extension='"+ this.extension +"' and drive='" + this.drive + ":' and path='" + this.path + "' and name like '" + this.name + "'\" GET name";
 		
+		//*** MPS - debug
+		debugSysOut("getWmicDataFileName", aux_cmd);
+		//***
 		CmdLine cmd = new CmdLine(aux_cmd);
 		
 		//Set local list from Wmic...
@@ -178,8 +190,31 @@ public class WmiConsole {
 		{
 			processWmiList.add(s);
 		}
-		return processWmiList;
+		this.setGetWmiOutList(processWmiList);
 	}	
 
+    public void debugSysOut(String var, String val)
+    {
+    	System.out.println("-------------------------------------------------------------------------------");
+       	System.out.println(">>> Debug " + padRight(var, 10)  + " = " + val);
+    	System.out.println("-------------------------------------------------------------------------------");
+    }
+
+    public void debugSysOut(String[] vars, String[] vals)
+    {
+    	System.out.println("===============================================================================");
+
+    	for (int i = 0; i < vals.length; i++)
+    	{
+           	System.out.println(">>> Debug " + padRight(vars[i], 10)  + " = " + vals[i]);
+		}
+
+    	System.out.println("===============================================================================");
+    }
+
+    private String padRight(String s, int n)
+    {
+    	return String.format("%1$-" + n + "s", s);
+    }    
 	
 }

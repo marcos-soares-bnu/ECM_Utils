@@ -1,7 +1,6 @@
 package main;
 
 import java.io.FileWriter;
-import java.util.Date;
 
 import wmi.*;
 import checks.*;
@@ -32,14 +31,8 @@ public class ICCcheckExec {
     		PAR2 = args[1];
     		PAR3 = args[2];
     		PAR4 = args[3];
-
     		if (args.length > 4)
     			PAR5 = args[4];
-    		else
-    		{
-    			if ( (PAR4.indexOf(":") > 0) && (!PAR4.endsWith("\\")) )
-    				PAR4 = PAR4 + "\\";
-    		}
     	}
     		
         try
@@ -49,21 +42,55 @@ public class ICCcheckExec {
         	wmi.setHost(PAR1);
         	wmi.setService(PAR2);
         	wmi.setProcess(PAR3);
-        	wmi.setPath(PAR4);
         	wmi.setExtension("log");
+
+			if (PAR4.indexOf(":") > 0)
+			{
+				if (!PAR4.endsWith("\\"))
+				{
+					PAR4 = PAR4 + "\\";
+				}
+				String[] aux_path = PAR4.split(":");
+				if (aux_path.length < 2)
+				{
+    				writeExitErrOut("Invalid_Path", PAR4);
+    	            System.exit(1);
+				}
+				else
+				{
+					wmi.setDrive(aux_path[0]);
+		        	wmi.setPath(aux_path[1].replace("\\", "\\\\"));
+				}
+			}
+			else
+			{
+				wmi.setDrive(PAR4);
+	        	wmi.setPath("\\\\");
+			}
         	
-        	Date os_dtime = wmi.getWmicLocalDateTime("");
-        	//wmi.setDrive("c");
-        	//wmi.setPath("\\\\Temp\\\\mps\\\\Trace\\\\DOKuStar_teste\\\\");
-        	
+        	//Check Logs record SERVICE... 
+        	wmi.getWmicServiceStatus();
+        	if (wmi.getGetWmiOutList().size() > 0)
+        	{
+        		for (String s : wmi.getGetWmiOutList()) {
+        			if (s.toLowerCase().indexOf("stopped") >= 0)
+        			{
+        				writeExitErrOut("LogService_stopped", s);
+        	            System.exit(1);
+        			}
+				}
+        	}
     		//Debug SysOut...
-        	String[] vars	= {"OS_DTIME", "HOST", "SERVICE", "PROCESS", "DRIVE", "PATH", "USAGE"};
-        	String[] vals 	= {os_dtime.toString(), PAR1, PAR2, PAR3, wmi.getDrive(), PAR4, PAR5};
-        	debugSysOut(vars, vals);
+        	String[] vars	= {"HOST", "SERVICE", "PROCESS", "LOCALPATH", "USAGE"};
+        	String[] vals 	= {PAR1, PAR2, PAR3, wmi.getDrive() + wmi.getPath(), PAR5};
+        	wmi.debugSysOut(vars, vals);
         	
-        	//Create ICCcheck instance, check Logs record SERVICE, set LISTOFFILES (DOKuStar)...
+        	//Create ICCcheck instance and set LISTOFFILES (DOKuStar)...
         	//Copy / Check Logs Files found and generate Error List File for All Logs...
         	ICCcheck iccInit = new ICCcheck(wmi);
+        	//*** MPS debug
+        	iccInit.debugSysOut("OS_DTIME", iccInit.getOS_DATETIME().toString());
+        	//***
         	iccInit.copyListLocal();
         	iccInit.outputSearchInListOfFiles("", "ICCcheck.tmp.err");
         	
@@ -131,31 +158,6 @@ public class ICCcheckExec {
 
         System.exit(1);
     }
-
-    public static void debugSysOut(String var, String val)
-    {
-    	System.out.println("-------------------------------------------------------------------------------");
-       	System.out.println(">>> Debug " + padRight(var, 10)  + " = " + val);
-    	System.out.println("-------------------------------------------------------------------------------");
-    }
-
-    public static void debugSysOut(String[] vars, String[] vals)
-    {
-    	System.out.println("===============================================================================");
-
-    	for (int i = 0; i < vals.length; i++)
-    	{
-           	System.out.println(">>> Debug " + padRight(vars[i], 10)  + " = " + vals[i]);
-		}
-
-    	System.out.println("===============================================================================");
-    }
-
-    public static String padRight(String s, int n)
-    {
-    	return String.format("%1$-" + n + "s", s);
-    }    
-
     
 //*********************************************************************************************************************
     

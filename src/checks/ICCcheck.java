@@ -44,6 +44,14 @@ public class ICCcheck {
 	//	---COUNTTYPES[2] = Count of Warning:	(Type in LogFile)
 	//	---COUNTTYPES[3] = Count of Error: 		(Type in LogFile)	
 	
+	public Date OS_DATETIME;
+	
+	public Date getOS_DATETIME() {
+		return OS_DATETIME;
+	}
+	public void setOS_DATETIME(Date oS_DATETIME) {
+		OS_DATETIME = oS_DATETIME;
+	}
 	public String getAux_state() {
 		return aux_state;
 	}
@@ -123,11 +131,13 @@ public class ICCcheck {
 		
 		//Set dateOS LOG files... '%@DATEOS%.@PID.log'
 		Date dateOS = this.wmi.getWmicLocalDateTime("yyyyMMddHHmmss");
+		this.setOS_DATETIME(dateOS);
 		String sdateOS = new SimpleDateFormat("yyyy-MM-dd").format(dateOS);
 		String sPID;
 		
 		//Set local list from Wmic...
-		List<String> listPIDs = this.wmi.getWmicProcessId();
+		this.wmi.getWmicProcessId();
+		List<String> listPIDs = this.wmi.getGetWmiOutList();
 		
     	for (int i = 1; i < listPIDs.size(); i++)
     	{
@@ -137,7 +147,8 @@ public class ICCcheck {
 			this.wmi.setName("%" + sdateOS + "%." + sPID + ".log");
 			
 			//Set local list from Wmic...
-			List<String> listFiles = this.wmi.getWmicDataFileName();
+			this.wmi.getWmicDataFileName();
+			List<String> listFiles = this.wmi.getGetWmiOutList();
 			
 			for (String sLogName : listFiles)
 			{
@@ -180,5 +191,30 @@ public class ICCcheck {
 			
 	    	cmd = new CmdLine("cmd /C FINDSTR /I /C:" + "\"" + textSearch + "\" \"" + aux_filename + "\" >> " + fileOut);
 		}
-	}	
+	}
+	
+    public void debugSysOut(String var, String val)
+    {
+    	System.out.println("-------------------------------------------------------------------------------");
+       	System.out.println(">>> Debug " + padRight(var, 10)  + " = " + val);
+    	System.out.println("-------------------------------------------------------------------------------");
+    }
+
+    public void debugSysOut(String[] vars, String[] vals)
+    {
+    	System.out.println("===============================================================================");
+
+    	for (int i = 0; i < vals.length; i++)
+    	{
+           	System.out.println(">>> Debug " + padRight(vars[i], 10)  + " = " + vals[i]);
+		}
+
+    	System.out.println("===============================================================================");
+    }
+
+    private String padRight(String s, int n)
+    {
+    	return String.format("%1$-" + n + "s", s);
+    }    
+	
 }
