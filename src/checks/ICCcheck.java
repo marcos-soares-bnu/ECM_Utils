@@ -10,6 +10,7 @@ import output.CmdLine;
 
 public class ICCcheck {
 
+	CmdLine cmd;
 	public WmiConsole wmi; 
 	//
 	public String aux_state 	= "";
@@ -41,8 +42,7 @@ public class ICCcheck {
 	//	---COUNTTYPES[0] = Count of Fine: 		(Type in LogFile)
 	//	---COUNTTYPES[1] = Count of Info: 		(Type in LogFile)
 	//	---COUNTTYPES[2] = Count of Warning:	(Type in LogFile)
-	//	---COUNTTYPES[3] = Count of Error: 		(Type in LogFile)
-	
+	//	---COUNTTYPES[3] = Count of Error: 		(Type in LogFile)	
 	
 	public String getAux_state() {
 		return aux_state;
@@ -116,7 +116,7 @@ public class ICCcheck {
 	public void setWmi(WmiConsole wmi) {
 		this.wmi = wmi;
 	}
-	//
+	
 	public ICCcheck(WmiConsole wmi) throws Throwable {
 		super();
 		this.wmi = wmi;
@@ -126,14 +126,20 @@ public class ICCcheck {
 		String sdateOS = new SimpleDateFormat("yyyy-MM-dd").format(dateOS);
 		String sPID;
 		
-    	for (int i = 1; i < this.wmi.getWmicProcessId().size(); i++)
+		//Set local list from Wmic...
+		List<String> listPIDs = this.wmi.getWmicProcessId();
+		
+    	for (int i = 1; i < listPIDs.size(); i++)
     	{
-    		sPID = this.wmi.getWmicProcessId().get(i).trim();
+    		sPID = listPIDs.get(i).trim();
 			
 			//Set name to search LOG files... '%@DATEOS%.@PID.log'
 			this.wmi.setName("%" + sdateOS + "%." + sPID + ".log");
 			
-			for (String sLogName : this.wmi.getWmicDataFileName())
+			//Set local list from Wmic...
+			List<String> listFiles = this.wmi.getWmicDataFileName();
+			
+			for (String sLogName : listFiles)
 			{
 				if (sLogName.indexOf(".log") > 0)
 				{
@@ -155,13 +161,12 @@ public class ICCcheck {
 	{
 		for (String attFile[] : this.LISTOFFILES)
 		{
-	    	CmdLine cmd = new CmdLine("cmd /C COPY " + "\\\\" + this.wmi.getHost() + "\\" + attFile[1].replace(":", "$") + " /Y");
+	    	cmd = new CmdLine("cmd /C COPY " + "\\\\" + this.wmi.getHost() + "\\" + attFile[1].replace(":", "$") + " /Y");
 		}
 	}
 	
 	public void outputSearchInListOfFiles(String textSearch, String fileOut) throws Throwable
 	{
-		//
 		String aux_filename = ""; 
 		String aux_pathname = ""; 
 		String[] aux_filepath;
@@ -172,10 +177,8 @@ public class ICCcheck {
 			aux_filepath 		= aux_pathname.replace("\\", "/").split("/");
 			if (aux_filepath.length > 0 )
 	    		aux_filename 	= aux_filepath[aux_filepath.length - 1]; 		
-			//
-	    	CmdLine cmd = new CmdLine("cmd /C FINDSTR /I /C:" + "\"" + textSearch + "\" \"" + aux_filename + "\" >> " + fileOut);
+			
+	    	cmd = new CmdLine("cmd /C FINDSTR /I /C:" + "\"" + textSearch + "\" \"" + aux_filename + "\" >> " + fileOut);
 		}
 	}	
-	
-	
 }

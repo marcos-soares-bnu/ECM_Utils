@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+
 import output.CmdLine;
 import wmi.WmiConsole;
 
@@ -115,5 +116,4 @@ public class ICCcheckHistory extends ICCcheck {
 		double[] vtotTypes = {pFine, pInfo, pWarn, pErro};
 		return vtotTypes;
     }	
-	
 }

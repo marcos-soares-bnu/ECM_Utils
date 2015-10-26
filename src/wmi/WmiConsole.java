@@ -108,10 +108,13 @@ public class WmiConsole {
 		
 		CmdLine cmd = new CmdLine("CMD /C WMIC /NODE:" + this.host + " OS GET localdatetime");
 		
-		if (cmd.getGetOutList().size() >= 1)
+		//Set local list from Wmic...
+		List<String> listOS = cmd.getGetOutList();
+		
+		if (listOS.size() >= 1)
 		{
     		//LocalDateTime=20151009083853.234000-180
-    		dateInString = cmd.getGetOutList().get(1).substring(0, 14);
+    		dateInString = listOS.get(1).substring(0, 14);
     		return formatter.parse(dateInString);
 		}
 		else
@@ -124,7 +127,10 @@ public class WmiConsole {
 		
 		CmdLine cmd = new CmdLine("CMD /C WMIC /NODE:" + this.host + " SERVICE WHERE \"name like '%" + this.service + "%'\" GET name,state");
 		
-		for (String s : cmd.getGetOutList())
+		//Set local list from Wmic...
+		List<String> listServices = cmd.getGetOutList();
+
+		for (String s : listServices)
 		{
 			serviceWmiList.add(s);
 		}
@@ -137,7 +143,10 @@ public class WmiConsole {
 		
 		CmdLine cmd = new CmdLine("CMD /C WMIC /NODE:" + this.host + " PATH Win32_Process WHERE \"name like '%" + this.process + "%'\" GET processid");
 		
-		for (String s : cmd.getGetOutList())
+		//Set local list from Wmic...
+		List<String> listProcs = cmd.getGetOutList();
+
+		for (String s : listProcs)
 		{
 			processWmiList.add(s);
 		}
@@ -162,7 +171,10 @@ public class WmiConsole {
 		
 		CmdLine cmd = new CmdLine(aux_cmd);
 		
-		for (String s : cmd.getGetOutList())
+		//Set local list from Wmic...
+		List<String> listFiles = cmd.getGetOutList();
+
+		for (String s : listFiles)
 		{
 			processWmiList.add(s);
 		}
