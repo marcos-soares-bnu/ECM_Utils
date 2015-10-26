@@ -196,7 +196,7 @@ public class WmiConsole {
     public void debugSysOut(String var, String val)
     {
     	System.out.println("-------------------------------------------------------------------------------");
-       	System.out.println(">>> Debug " + padRight(var, 10)  + " = " + val);
+       	System.out.println(">>> Debug " + padRight(var, 30)  + " = " + val);
     	System.out.println("-------------------------------------------------------------------------------");
     }
 
@@ -206,7 +206,7 @@ public class WmiConsole {
 
     	for (int i = 0; i < vals.length; i++)
     	{
-           	System.out.println(">>> Debug " + padRight(vars[i], 10)  + " = " + vals[i]);
+           	System.out.println(">>> Debug " + padRight(vars[i], 30)  + " = " + vals[i]);
 		}
 
     	System.out.println("===============================================================================");

@@ -33,10 +33,7 @@ public class CmdLine {
         StreamGobbler outputGobbler = run(proc, "ICC");
         
         //Any error???
-        int exitVal = proc.waitFor();
-        
-		//Debug SysOut...
-    	//debugSysOut("ExitValue", String.valueOf(exitVal));
+        proc.waitFor();
         
     	//Set Error List...
         List<String> tmp_linese = new ArrayList<String>();

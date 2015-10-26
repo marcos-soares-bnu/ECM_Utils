@@ -92,13 +92,13 @@ public class ICCcheckExec {
         	iccInit.debugSysOut("OS_DTIME", iccInit.getOS_DATETIME().toString());
         	//***
         	iccInit.copyListLocal();
-        	iccInit.outputSearchInListOfFiles("", "ICCcheck.tmp.err");
+        	iccInit.outputSearchInListOfFiles("Error: " + wmi.getHost(), "ICCcheck.tmp.err");
         	
         	//Create Out File depending of check (PAR5)...
         	if 		(PAR5.equals("-x"))
         	{
-        		//ICCcheckExtraction iccExtraction = new ICCcheckExtraction(wmi);
-        		//iccExtraction.checkExtraction("ICCcheck.tmp.ext");
+        		ICCcheckExtractionServers iccExtraction = new ICCcheckExtractionServers(wmi);
+        		iccExtraction.checkExtraction("ICCcheck.tmp.ext");
         	}
         	else if (PAR5.equals("-v"))	
         	{
@@ -122,8 +122,8 @@ public class ICCcheckExec {
         	}
         	else						
         	{
-        		//ICCcheckExtraction iccExtraction = new ICCcheckExtraction(wmi);
-        		//iccExtraction.checkExtraction("ICCcheck.tmp.ext");
+        		ICCcheckExtractionServers iccExtraction = new ICCcheckExtractionServers(wmi);
+        		iccExtraction.checkExtraction("ICCcheck.tmp.ext");
         		//
         		ICCcheckOverview iccOverview = new ICCcheckOverview(wmi);
         		iccOverview.checkOverview("ICCcheck.tmp.ovw");
