@@ -1,6 +1,9 @@
 package main;
 
 import java.io.FileWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 import wmi.*;
 import checks.*;
@@ -14,7 +17,6 @@ public class ICCcheckExec {
 	public static String PAR3		= "";
 	public static String PAR4		= "";
 	public static String PAR5		= "";
-	
 	
 //*** MAIN ************************************************************************************************************
 	
@@ -64,10 +66,24 @@ public class ICCcheckExec {
 			}
 			else
 			{
-				wmi.setDrive(PAR4);
-	        	wmi.setPath("\\\\");
+				if (PAR4.length() > 1 )
+				{
+					wmi.setDrive(PAR4.substring(0, 1));
+					wmi.setPath("\\\\" + PAR4.substring(1) + "\\\\%");
+				}
+				else
+				{
+					wmi.setDrive(PAR4);
+					wmi.setPath("\\\\");
+				}
 			}
         	
+			//Set dateOS to find name of files based on dateOS...
+			//Set wmi.setName LOG files... '%@DATEOS%.log'
+			Date dateOS = wmi.getWmicLocalDateTime("yyyyMMddHHmmss");
+			String sdateOS = new SimpleDateFormat("yyyy-MM-dd").format(dateOS);
+			wmi.setName("%" + sdateOS + "%.log");
+			
         	//Check Logs record SERVICE... 
         	wmi.getWmicServiceStatus();
         	if (wmi.getGetWmiOutList().size() > 0)
@@ -81,16 +97,18 @@ public class ICCcheckExec {
 				}
         	}
     		//Debug SysOut...
-        	String[] vars	= {"HOST", "SERVICE", "PROCESS", "LOCALPATH", "USAGE"};
-        	String[] vals 	= {PAR1, PAR2, PAR3, wmi.getDrive() + wmi.getPath(), PAR5};
+        	String[] vars	= {"DATEOS", "HOST", "SERVICE", "PROCESS", "LOCALPATH", "USAGE"};
+        	String[] vals 	= {sdateOS, PAR1, PAR2, PAR3, wmi.getDrive() + wmi.getPath(), PAR5};
         	wmi.debugSysOut(vars, vals);
         	
+    		//Set local list from PIDs of process parameter...
+    		wmi.getWmicProcessId();
+    		List<String> listPIDs = wmi.getGetWmiOutList();
+
         	//Create ICCcheck instance and set LISTOFFILES (DOKuStar)...
+        	ICCcheck iccInit = new ICCcheck(wmi, listPIDs);
+        	
         	//Copy / Check Logs Files found and generate Error List File for All Logs...
-        	ICCcheck iccInit = new ICCcheck(wmi);
-        	//*** MPS debug
-        	iccInit.debugSysOut("OS_DTIME", iccInit.getOS_DATETIME().toString());
-        	//***
         	iccInit.copyListLocal();
         	iccInit.outputSearchInListOfFiles("Error: " + wmi.getHost(), "ICCcheck.tmp.err");
         	

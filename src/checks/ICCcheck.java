@@ -1,6 +1,6 @@
 package checks;
 
-import java.text.SimpleDateFormat;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,7 +43,16 @@ public class ICCcheck {
 	//	---COUNTTYPES[1] = Count of Info: 		(Type in LogFile)
 	//	---COUNTTYPES[2] = Count of Warning:	(Type in LogFile)
 	//	---COUNTTYPES[3] = Count of Error: 		(Type in LogFile)	
+
+	public List<String> LISTOFPIDS	= new ArrayList<String>();
 	
+	public List<String> getLISTOFPIDS() {
+		return LISTOFPIDS;
+	}
+	public void setLISTOFPIDS(List<String> lISTOFPIDS) {
+		LISTOFPIDS = lISTOFPIDS;
+	}
+
 	public Date OS_DATETIME;
 	
 	public Date getOS_DATETIME() {
@@ -129,57 +138,77 @@ public class ICCcheck {
 		super();
 		this.wmi = wmi;
 		
-		//Set dateOS LOG files... '%@DATEOS%.@PID.log'
-		Date dateOS = this.wmi.getWmicLocalDateTime("yyyyMMddHHmmss");
-		this.setOS_DATETIME(dateOS);
-		String sdateOS = new SimpleDateFormat("yyyy-MM-dd").format(dateOS);
-		String sPID;
+		if (this.LISTOFFILES.size() == 0)
+		{
+			setLISTOFFILES();
+		}
+	}
+
+	public ICCcheck(WmiConsole wmi, List<String> ListPids) throws Throwable {
+		super();
+		this.wmi = wmi;
+		this.setLISTOFPIDS(ListPids);
 		
-		//Set local list from Wmic...
-		this.wmi.getWmicProcessId();
-		List<String> listPIDs = this.wmi.getGetWmiOutList();
-		
-    	for (int i = 1; i < listPIDs.size(); i++)
-    	{
-    		sPID = listPIDs.get(i).trim();
+		if (this.LISTOFFILES.size() == 0)
+		{
+			setLISTOFFILES();
+		}
+	}
+	
+	public void setLISTOFFILES() throws Throwable
+	{
+		//Get All LOG Files with dateOS... so filter for PIDS List...
+		this.wmi.getWmicDataFileName();
+		List<String> listFiles 		= this.wmi.getGetWmiOutList();
+
+		for (String sLogName : listFiles) {
+
+			String[] sPID			= sLogName.split("\\.");
+			String aux_sPID			= "";
+			if (sPID.length > 2)
+				aux_sPID			= sPID[sPID.length - 2];
 			
-			//Set name to search LOG files... '%@DATEOS%.@PID.log'
-			this.wmi.setName("%" + sdateOS + "%." + sPID + ".log");
-			
-			//Set local list from Wmic...
-			this.wmi.getWmicDataFileName();
-			List<String> listFiles = this.wmi.getGetWmiOutList();
-			
-			for (String sLogName : listFiles)
+			if (this.LISTOFPIDS.indexOf(aux_sPID) > 0)
 			{
-				if (sLogName.indexOf(".log") > 0)
-				{
-					this.ATTOFFILES 	= new String[6];
-					//
-					this.ATTOFFILES[0] 	= sPID;
-					this.ATTOFFILES[1] 	= sLogName;
-					this.ATTOFFILES[2] 	= "0";
-					this.ATTOFFILES[3] 	= "0";
-					this.ATTOFFILES[4] 	= "0";
-					this.ATTOFFILES[5] 	= "0";
-					this.LISTOFFILES.add(this.ATTOFFILES);				
-				}
+				this.ATTOFFILES 	= new String[6];
+				this.ATTOFFILES[0] 	= aux_sPID;
+				this.ATTOFFILES[1] 	= sLogName;
+				this.ATTOFFILES[2] 	= "0";
+				this.ATTOFFILES[3] 	= "0";
+				this.ATTOFFILES[4] 	= "0";
+				this.ATTOFFILES[5] 	= "0";
+				this.LISTOFFILES.add(this.ATTOFFILES);				
 			}
 		}
 	}
 	
 	public void copyListLocal() throws Throwable
 	{
+		//Write CMD to copy all LOG's files...
+		String aux_cmd			= "";
+    	FileWriter writer		= new FileWriter("ICCcheck.tmp.cop.cmd");
+		
 		for (String attFile[] : this.LISTOFFILES)
 		{
-	    	cmd = new CmdLine("cmd /C COPY " + "\\\\" + this.wmi.getHost() + "\\" + attFile[1].replace(":", "$") + " /Y");
+			//***MPS debug
+			aux_cmd				= "COPY \"" + "\\\\" + this.wmi.getHost() + "\\" + attFile[1].replace(":", "$").trim() + "\" /Y"; 
+			debugSysOut("copyListLocal", aux_cmd);
+			//***
+    		writer.write(aux_cmd + " \n");
 		}
+		writer.close();
+		
+		//Execute CMD to copy all LOG's files...
+		cmd = new CmdLine("cmd /C ICCcheck.tmp.cmd");
 	}
 	
 	public void outputSearchInListOfFiles(String textSearch, String fileOut) throws Throwable
 	{
-		String aux_filename = ""; 
-		String aux_pathname = ""; 
+		//Write CMD to copy all LOG's files...
+		String aux_cmd			= "";
+    	FileWriter writer		= new FileWriter("ICCcheck.tmp.err.cmd");
+		String aux_filename 	= ""; 
+		String aux_pathname 	= ""; 
 		String[] aux_filepath;
 		
 		for (String attFile[] : this.LISTOFFILES)
@@ -189,8 +218,16 @@ public class ICCcheck {
 			if (aux_filepath.length > 0 )
 	    		aux_filename 	= aux_filepath[aux_filepath.length - 1]; 		
 			
-	    	cmd = new CmdLine("cmd /C FINDSTR /I /C:" + "\"" + textSearch + "\" \"" + aux_filename + "\" >> " + fileOut);
+			//***MPS debug
+			aux_cmd				= "FINDSTR /I /C:" + "\"" + textSearch + "\" \"" + aux_filename + "\" >> " + fileOut;
+			debugSysOut("outputSearchInListOfFiles", aux_cmd);
+			//***
+    		writer.write(aux_cmd + " \n");
 		}
+		writer.close();
+		
+		//Execute CMD to copy all LOG's files...
+		cmd = new CmdLine("cmd /C ICCcheck.tmp.err.cmd");
 	}
 	
     public void debugSysOut(String var, String val)

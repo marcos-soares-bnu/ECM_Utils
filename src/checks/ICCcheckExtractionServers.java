@@ -12,7 +12,6 @@ public class ICCcheckExtractionServers extends ICCcheck {
     }
     
     public void checkExtraction(String fileExtraction) throws Throwable {
-        CmdLine cmd;
         String aux_search = SEARCH_LINE.replace("@TYPE", "Error");
         String aux_filename     = "";
         String aux_pathname     = "";

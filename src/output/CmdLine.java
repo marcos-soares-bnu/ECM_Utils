@@ -7,7 +7,7 @@ import java.util.List;
 public class CmdLine {
 
 	String cmd;
-	List<String> getOutList = new ArrayList<String>();
+	public List<String> getOutList = new ArrayList<String>();
 
 	public String getCmd() {
 		return cmd;
@@ -17,10 +17,17 @@ public class CmdLine {
 		this.cmd = cmd;
 	}
 
-	public List<String> getGetOutList() throws Throwable {
+	public List<String> getGetOutList() {
+		return getOutList;
+	}
 
-		if (this.getOutList.size() > 0)
-			return this.getOutList;
+	public void setGetOutList(List<String> getOutList) {
+		this.getOutList = getOutList;
+	}
+
+	public CmdLine(String cmd) throws Throwable {
+		super();
+		this.cmd = cmd;
 		
     	//Execute args command...
         Runtime rt = Runtime.getRuntime();
@@ -44,21 +51,9 @@ public class CmdLine {
     	tmp_linesi = outputGobbler.getOs_lines();
     	
     	if (tmp_linesi.size() > 0)
-    		getOutList = tmp_linesi;
+    		this.setGetOutList(tmp_linesi);
     	else
-    		getOutList = tmp_linese;
-		
-		return getOutList;
-	}
-
-	public void setGetOutList(List<String> getOutList) {
-		this.getOutList = getOutList;
-	}
-
-	public CmdLine(String cmd) throws Throwable {
-		super();
-		this.cmd = cmd;
-		this.getOutList = this.getGetOutList();
+    		this.setGetOutList(tmp_linese);
 	}
 
     public void callCMD() {
