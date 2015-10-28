@@ -9,8 +9,9 @@ public class StreamGobbler extends Thread
     String type;
     OutputStream os;
     List<String> os_lines;
+    int delay = 0;
     
-    public List<String> getOs_lines() {
+	public List<String> getOs_lines() {
 		return os_lines;
 	}
 	public void setOs_lines(List<String> os_lines) {
@@ -25,6 +26,12 @@ public class StreamGobbler extends Thread
         this.is = is;
         this.type = type;
         this.os = redirect;
+    }
+    public StreamGobbler(InputStream is, String type, int delay)
+    {
+        this.is = is;
+        this.type = type;
+        this.delay = delay;
     }
     
     public void run()
@@ -60,6 +67,19 @@ public class StreamGobbler extends Thread
             
             if (pw != null)
                 pw.flush();
+            
+            //If DELAY, wait miliseconds...
+            if (this.delay > 0)
+            {
+            	try {
+					Thread.sleep( this.delay );
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					System.out.println(">>> Exception>" + e.getMessage());
+					e.printStackTrace();
+				}
+            }
+            
         }
         catch (IOException ioe)
         {

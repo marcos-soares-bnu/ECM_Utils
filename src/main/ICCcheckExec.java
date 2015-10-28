@@ -82,6 +82,7 @@ public class ICCcheckExec {
 			//Set wmi.setName LOG files... '%@DATEOS%.log'
 			Date dateOS = wmi.getWmicLocalDateTime("yyyyMMddHHmmss");
 			String sdateOS = new SimpleDateFormat("yyyy-MM-dd").format(dateOS);
+			String sdateOSFile = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss").format(dateOS);
 			wmi.setName("%" + sdateOS + "%.log");
 			
         	//Check Logs record SERVICE... 
@@ -104,61 +105,75 @@ public class ICCcheckExec {
     		//Set local list from PIDs of process parameter...
     		wmi.getWmicProcessId();
     		List<String> listPIDs = wmi.getGetWmiOutList();
+    		//trim list itens...
+    		for (int i = 0; i < listPIDs.size(); i++) { listPIDs.set(i, listPIDs.get(i).trim()); }
 
         	//Create ICCcheck instance and set LISTOFFILES (DOKuStar)...
+    		wmi.setDelay(5000);
         	ICCcheck iccInit = new ICCcheck(wmi, listPIDs);
+        	iccInit.setLISTOFFILES();
+
+    		//Set File pattern...
+        	iccInit.setICCFILE_PREFIX("ICCcheck.tmp." + wmi.getHost() + "." + sdateOSFile);
         	
         	//Copy / Check Logs Files found and generate Error List File for All Logs...
-        	iccInit.copyListLocal();
-        	iccInit.outputSearchInListOfFiles("Error: " + wmi.getHost(), "ICCcheck.tmp.err");
+        	iccInit.copyListLocal(iccInit.getICCFILE_PREFIX() + ".cop.cmd");
+        	iccInit.outputSearchInListOfFiles("Error: " + wmi.getHost(), (iccInit.getICCFILE_PREFIX() + ".sea.cmd"), (iccInit.getICCFILE_PREFIX() + ".err") );
         	
         	//Create Out File depending of check (PAR5)...
+    		wmi.setDelay(0);
         	if 		(PAR5.equals("-x"))
         	{
         		ICCcheckExtractionServers iccExtraction = new ICCcheckExtractionServers(wmi);
-        		iccExtraction.checkExtraction("ICCcheck.tmp.ext");
+        		iccExtraction.setLISTOFFILES(iccInit.LISTOFFILES);
+        		iccExtraction.checkExtraction(iccInit.getICCFILE_PREFIX() + ".ext");
         	}
         	else if (PAR5.equals("-v"))	
         	{
         		ICCcheckOverview iccOverview = new ICCcheckOverview(wmi);
-        		iccOverview.checkOverview("ICCcheck.tmp.ovw");
+        		iccOverview.setLISTOFFILES(iccInit.LISTOFFILES);
+        		iccOverview.checkOverview(iccInit.getICCFILE_PREFIX() + ".ovw");
         	}
         	else if (PAR5.equals("-n"))
         	{
         		ICCcheckClusterNodes iccClusternodes = new ICCcheckClusterNodes(wmi, 10); //MAX_DTDIFF
-        		iccClusternodes.checkClusterNodes("ICCcheck.tmp.cln"); 
+        		iccClusternodes.setLISTOFFILES(iccInit.LISTOFFILES);
+        		iccClusternodes.checkClusterNodes(iccInit.getICCFILE_PREFIX() + ".cln"); 
         	}
         	else if (PAR5.equals("-o"))
         	{
         		ICCcheckOperations iccOperations = new ICCcheckOperations(wmi, 10); //MAX_DTDIFF
-        		iccOperations.checkOperations("ICCcheck.tmp.ops");
+        		iccOperations.setLISTOFFILES(iccInit.LISTOFFILES);
+        		iccOperations.checkOperations(iccInit.getICCFILE_PREFIX() + ".ops");
         	}
         	else if (PAR5.equals("-h"))	
         	{
         		ICCcheckHistory iccHistory = new ICCcheckHistory(wmi, 5); //MAX_PERERR
-        		iccHistory.checkHistory("ICCcheck.tmp.hst");
+        		iccHistory.setLISTOFFILES(iccInit.LISTOFFILES);
+        		iccHistory.checkHistory(iccInit.getICCFILE_PREFIX() + ".hst");
         	}
         	else						
         	{
         		ICCcheckExtractionServers iccExtraction = new ICCcheckExtractionServers(wmi);
-        		iccExtraction.checkExtraction("ICCcheck.tmp.ext");
+        		iccExtraction.setLISTOFFILES(iccInit.LISTOFFILES);
+        		iccExtraction.checkExtraction(iccInit.getICCFILE_PREFIX() + ".ext");
         		//
         		ICCcheckOverview iccOverview = new ICCcheckOverview(wmi);
-        		iccOverview.checkOverview("ICCcheck.tmp.ovw");
+        		iccOverview.checkOverview(iccInit.getICCFILE_PREFIX() + ".ovw");
         		//
         		ICCcheckClusterNodes iccClusternodes = new ICCcheckClusterNodes(wmi, 10); //MAX_DTDIFF
-        		iccClusternodes.checkClusterNodes("ICCcheck.tmp.cln");
+        		iccClusternodes.checkClusterNodes(iccInit.getICCFILE_PREFIX() + ".cln");
         		//
         		ICCcheckOperations iccOperations = new ICCcheckOperations(wmi, 10); //MAX_DTDIFF
-        		iccOperations.checkOperations("ICCcheck.tmp.ops");
+        		iccOperations.checkOperations(iccInit.getICCFILE_PREFIX() + ".ops");
         		//
         		ICCcheckHistory iccHistory = new ICCcheckHistory(wmi, 5); //MAX_PERERR
-        		iccHistory.checkHistory("ICCcheck.tmp.hst");
+        		iccHistory.checkHistory(iccInit.getICCFILE_PREFIX() + ".hst");
         	}
         } 
         catch (Throwable t)
         {
-    		writeExitErrOut("Throwable", t.getStackTrace().toString());
+    		writeExitErrOut("Throwable", t.getMessage() + t.getLocalizedMessage() + t.getCause() + " | Trace: " + t.getStackTrace().toString());
         	t.printStackTrace();
         }
     }

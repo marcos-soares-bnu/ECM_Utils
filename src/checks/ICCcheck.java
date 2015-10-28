@@ -1,5 +1,6 @@
 package checks;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -51,6 +52,16 @@ public class ICCcheck {
 	}
 	public void setLISTOFPIDS(List<String> lISTOFPIDS) {
 		LISTOFPIDS = lISTOFPIDS;
+	}
+
+	public String ICCFILE_PREFIX;
+
+	
+	public String getICCFILE_PREFIX() {
+		return ICCFILE_PREFIX;
+	}
+	public void setICCFILE_PREFIX(String iCCFILE_PREFIX) {
+		ICCFILE_PREFIX = iCCFILE_PREFIX;
 	}
 
 	public Date OS_DATETIME;
@@ -137,22 +148,12 @@ public class ICCcheck {
 	public ICCcheck(WmiConsole wmi) throws Throwable {
 		super();
 		this.wmi = wmi;
-		
-		if (this.LISTOFFILES.size() == 0)
-		{
-			setLISTOFFILES();
-		}
 	}
 
 	public ICCcheck(WmiConsole wmi, List<String> ListPids) throws Throwable {
 		super();
 		this.wmi = wmi;
 		this.setLISTOFPIDS(ListPids);
-		
-		if (this.LISTOFFILES.size() == 0)
-		{
-			setLISTOFFILES();
-		}
 	}
 	
 	public void setLISTOFFILES() throws Throwable
@@ -168,7 +169,7 @@ public class ICCcheck {
 			if (sPID.length > 2)
 				aux_sPID			= sPID[sPID.length - 2];
 			
-			if (this.LISTOFPIDS.indexOf(aux_sPID) > 0)
+			if (this.LISTOFPIDS.indexOf(aux_sPID) >= 0)
 			{
 				this.ATTOFFILES 	= new String[6];
 				this.ATTOFFILES[0] 	= aux_sPID;
@@ -182,11 +183,11 @@ public class ICCcheck {
 		}
 	}
 	
-	public void copyListLocal() throws Throwable
+	public void copyListLocal(String fileCmd) throws Throwable
 	{
 		//Write CMD to copy all LOG's files...
 		String aux_cmd			= "";
-    	FileWriter writer		= new FileWriter("ICCcheck.tmp.cop.cmd");
+    	FileWriter writer		= new FileWriter(fileCmd);
 		
 		for (String attFile[] : this.LISTOFFILES)
 		{
@@ -199,14 +200,15 @@ public class ICCcheck {
 		writer.close();
 		
 		//Execute CMD to copy all LOG's files...
-		cmd = new CmdLine("cmd /C ICCcheck.tmp.cmd");
+		cmd = new CmdLine("cmd /C " + fileCmd);
 	}
 	
-	public void outputSearchInListOfFiles(String textSearch, String fileOut) throws Throwable
+	public void outputSearchInListOfFiles(String textSearch, String fileCmd, String fileOut) throws Throwable
 	{
 		//Write CMD to copy all LOG's files...
 		String aux_cmd			= "";
-    	FileWriter writer		= new FileWriter("ICCcheck.tmp.err.cmd");
+		File dirlocal			=  new File(".");
+    	FileWriter writer		= new FileWriter(fileCmd);
 		String aux_filename 	= ""; 
 		String aux_pathname 	= ""; 
 		String[] aux_filepath;
@@ -216,18 +218,20 @@ public class ICCcheck {
 			aux_pathname 		= attFile[1].trim(); 
 			aux_filepath 		= aux_pathname.replace("\\", "/").split("/");
 			if (aux_filepath.length > 0 )
-	    		aux_filename 	= aux_filepath[aux_filepath.length - 1]; 		
-			
-			//***MPS debug
-			aux_cmd				= "FINDSTR /I /C:" + "\"" + textSearch + "\" \"" + aux_filename + "\" >> " + fileOut;
-			debugSysOut("outputSearchInListOfFiles", aux_cmd);
-			//***
-    		writer.write(aux_cmd + " \n");
+			{
+	    		aux_filename 	= dirlocal.getCanonicalPath() + "\\" + aux_filepath[aux_filepath.length - 1];
+
+	    		//*** Print the name of LOG with errors
+				aux_cmd			= "ECHO LogFile: " + aux_pathname  + " >> " + fileOut + " \n";
+				aux_cmd			= aux_cmd + "FINDSTR /I /C:" + "\"" + textSearch + "\" \"" + aux_filename + "\" >> " + fileOut + " \n";
+				aux_cmd			= aux_cmd + "ECHO. >> " + fileOut + " \n";
+	    		writer.write(aux_cmd + " \n");
+			}
 		}
 		writer.close();
 		
 		//Execute CMD to copy all LOG's files...
-		cmd = new CmdLine("cmd /C ICCcheck.tmp.err.cmd");
+		cmd = new CmdLine("cmd /C " + fileCmd);
 	}
 	
     public void debugSysOut(String var, String val)

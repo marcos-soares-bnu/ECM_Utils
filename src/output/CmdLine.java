@@ -1,12 +1,20 @@
 package output;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CmdLine {
 
 	String cmd;
+	int delay;
+	
+	public int getDelay() {
+		return delay;
+	}
+	public void setDelay(int delay) {
+		this.delay = delay;
+	}
+
 	public List<String> getOutList = new ArrayList<String>();
 
 	public String getCmd() {
@@ -29,15 +37,30 @@ public class CmdLine {
 		super();
 		this.cmd = cmd;
 		
+		callCMD();
+	}
+	public CmdLine(String cmd, int delay) throws Throwable {
+		super();
+		this.cmd = cmd;
+		this.delay = delay;
+		
+		callCMD();
+	}
+
+	private void callCMD() throws Throwable
+    {
+    	StreamGobbler errorGobbler;
+    	StreamGobbler outputGobbler;
+    	
     	//Execute args command...
         Runtime rt = Runtime.getRuntime();
         Process proc = rt.exec(this.cmd);
 
         //Check Error...
-        StreamGobbler errorGobbler = run(proc, "ERR");
+    	errorGobbler = run(proc, "ERR", this.delay);
 
         //Check Output...
-        StreamGobbler outputGobbler = run(proc, "ICC");
+        outputGobbler = run(proc, "ICC", this.delay);
         
         //Any error???
         proc.waitFor();
@@ -54,31 +77,28 @@ public class CmdLine {
     		this.setGetOutList(tmp_linesi);
     	else
     		this.setGetOutList(tmp_linese);
-	}
-
-    public void callCMD() {
-        try {
-            Process p = Runtime.getRuntime().exec(this.cmd);
-            p.waitFor();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
     }
     
-    private static StreamGobbler run(Process proc, String typ){
- 
+    private static StreamGobbler run(Process proc, String typ, int delay)
+    {
     	StreamGobbler tmpGobbler;
     	
         //Any error message?
     	if (typ.equals("ERR"))
     	{
-            tmpGobbler = new StreamGobbler(proc.getErrorStream(), typ);
+    		if (delay > 0)
+    			tmpGobbler = new StreamGobbler(proc.getErrorStream(), typ, delay);
+    		else
+    			tmpGobbler = new StreamGobbler(proc.getErrorStream(), typ);
     	}
     	else
     	{
-            tmpGobbler = new StreamGobbler(proc.getInputStream(), typ);
+    		if (delay > 0)
+    			tmpGobbler = new StreamGobbler(proc.getInputStream(), typ, delay);
+    		else
+    			tmpGobbler = new StreamGobbler(proc.getInputStream(), typ);
     	}
-    	
+            
         //Start process...
         tmpGobbler.start();
 
