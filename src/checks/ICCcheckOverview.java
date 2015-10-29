@@ -44,24 +44,23 @@ public class ICCcheckOverview extends ICCcheck {
     				this.aux_optname	= info[2].substring(info[2].indexOf("OperationTypeName=") ,	info[2].indexOf("ServiceType=")).replace("OperationTypeName=", "").replace("\"", "").replace("\n", "").trim();
     				this.aux_label		= info[2].substring(info[2].indexOf("Label=") ,				info[2].indexOf("HasFailed=")).replace("Label=", "").replace("\"", "").replace("\n", "").trim();
     				this.aux_client		= info[2].substring(info[2].indexOf("ClientID=") , 			info[2].indexOf("ClusterNodeID=")).replace("ClientID=", "").replace("\"", "").replace("\n", "").trim();
+
+    				//
+    				if (aux_state.equals("Ready"))
+    					aux_output 			= aux_output.replace("@STNR", "FALSE");
+    				else
+    					aux_output 			= aux_output.replace("@STNR", "TRUE");
+    				
+                    //Write type File...
+            		String sw =	aux_output 				+ 
+            	    			(" \\State\\ " 			+ this.aux_state)	+
+            	    			(" \\Name\\ "			+ this.aux_name)	+
+            	    			(" \\Profile\\ " 		+ this.aux_optname)	+
+            	    			(" \\Client\\ " 		+ this.aux_client)	+
+            	    			(" \\Label\\ " 			+ this.aux_label);
+
+            		writer.write(sw + "\n");
     			}
-    			else
-    				this.aux_state		= "Fields not found (ClusterNode)!!!";
-
-				if (aux_state.equals("Ready"))
-					aux_output 			= aux_output.replace("@STNR", "FALSE");
-				else
-					aux_output 			= aux_output.replace("@STNR", "TRUE");
-				
-                //Write type File...
-        		String sw =	aux_output 				+ 
-        	    			(" \\State\\ " 			+ this.aux_state)	+
-        	    			(" \\Name\\ "			+ this.aux_name)	+
-        	    			(" \\Profile\\ " 		+ this.aux_optname)	+
-        	    			(" \\Client\\ " 		+ this.aux_client)	+
-        	    			(" \\Label\\ " 			+ this.aux_label);
-
-        		writer.write(sw + "\n");
 
             	aux_output = "\\statusNotReady\\ @STNR";
     		}

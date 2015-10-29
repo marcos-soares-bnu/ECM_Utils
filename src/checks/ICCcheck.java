@@ -24,12 +24,6 @@ public class ICCcheck {
 	public String aux_optname	= "";
 	public String aux_name		= "";	
 
-	public String USAGE_NOTE	= "*** NOTE: \"[-x] 	= Check SAP E-Xtraction + History \""	+ "\n" +
-									"***       \"[-v] 	= Check O-Verview + History \""			+ "\n" +
-									"***       \"[-n] 	= Check Cluster -Nodes + History \""	+ "\n" +
-									"***       \"[-o] 	= Check -Operations + History \""		+ "\n" +
-									"***       \"[  ] 	= Check All \"			(DOKuStar Process)";
-
 	public String[] ATTOFFILES	= new String[6];
 	//	---ATTOFFILES[0] = PID
 	//	---ATTOFFILES[1] = Path/Filename
@@ -55,7 +49,6 @@ public class ICCcheck {
 	}
 
 	public String ICCFILE_PREFIX;
-
 	
 	public String getICCFILE_PREFIX() {
 		return ICCFILE_PREFIX;
@@ -203,11 +196,11 @@ public class ICCcheck {
 		cmd = new CmdLine("cmd /C " + fileCmd);
 	}
 	
-	public void outputSearchInListOfFiles(String textSearch, String fileCmd, String fileOut) throws Throwable
+	public void outputSearchInListOfFiles(String textSearch, String filterFile, String fileCmd, String fileOut) throws Throwable
 	{
 		//Write CMD to copy all LOG's files...
 		String aux_cmd			= "";
-		File dirlocal			=  new File(".");
+		File dirlocal			= new File(".");
     	FileWriter writer		= new FileWriter(fileCmd);
 		String aux_filename 	= ""; 
 		String aux_pathname 	= ""; 
@@ -221,11 +214,15 @@ public class ICCcheck {
 			{
 	    		aux_filename 	= dirlocal.getCanonicalPath() + "\\" + aux_filepath[aux_filepath.length - 1];
 
-	    		//*** Print the name of LOG with errors
-				aux_cmd			= "ECHO LogFile: " + aux_pathname  + " >> " + fileOut + " \n";
-				aux_cmd			= aux_cmd + "FINDSTR /I /C:" + "\"" + textSearch + "\" \"" + aux_filename + "\" >> " + fileOut + " \n";
-				aux_cmd			= aux_cmd + "ECHO. >> " + fileOut + " \n";
-	    		writer.write(aux_cmd + " \n");
+	    		//Filter per filterFile... if empty no filter applied...
+	    		if ( (filterFile.equals("")) || (aux_filename.contains(filterFile)) )
+	    		{
+		    		//*** Print the name of LOG with errors
+					aux_cmd			= "ECHO LogFile: " + aux_pathname  + " >> " + fileOut + " \n";
+					aux_cmd			= aux_cmd + "FINDSTR /I /C:" + "\"" + textSearch + "\" \"" + aux_filename + "\" >> " + fileOut + " \n";
+					aux_cmd			= aux_cmd + "ECHO. >> " + fileOut + " \n";
+		    		writer.write(aux_cmd + " \n");
+	    		}
 			}
 		}
 		writer.close();
