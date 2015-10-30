@@ -86,6 +86,10 @@ public class ICCcheckExec {
 				default:
 					break;
 			}
+        	
+        	//Exit Completed...
+        	wmi.debugSysOut("Execution Status: ", "Completed!");
+        	
         } 
         catch (Throwable t)
         {
@@ -105,7 +109,7 @@ public class ICCcheckExec {
 		//
 		String[] filesFilter 	= new String[2];
 		filesFilter[0] 			= "Extraction.Server";
-		filesFilter[0] 			= "HotSpot";
+		filesFilter[1] 			= "HotSpot";
 		iccExtraction.checkExtraction(iccInit.getICCFILE_PREFIX() + ".ext", filesFilter);
     }
     public static void check_V(WmiConsole wmi, ICCcheck iccInit) throws Throwable
