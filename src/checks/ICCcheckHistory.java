@@ -1,11 +1,14 @@
 package checks;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
-import output.CmdLine;
 import wmi.WmiConsole;
 
 public class ICCcheckHistory extends ICCcheck {
@@ -42,7 +45,8 @@ public class ICCcheckHistory extends ICCcheck {
 			//
 			
         	//Call sumPercTypes...
-    		double[] vtotType = sumPercTypes(aux_filename);
+			String searches[] = {"Fine: " + this.wmi.getHost(), "Info: " + this.wmi.getHost(), "Warning: " + this.wmi.getHost(), "Error: " + this.wmi.getHost()};
+    		double[] vtotType = sumPercTypes(aux_filename, searches);
     		
     		if (vtotType[3] > this.MAX_PERERR)
     			aux_output 	= aux_output.replace("@STP5M", "TRUE");
@@ -73,40 +77,28 @@ public class ICCcheckHistory extends ICCcheck {
         writer.close();
 	}
 
-    private double[] sumPercTypes(String aux_filename) throws Throwable
+    private double[] sumPercTypes(String aux_filename, String[] search) throws IOException
     {
-		this.COUNTTYPES 			= new int[4];
-    	String aux_search 			= "@TYPE: " + this.wmi.getHost();
-    	String aux_typ 				= "";
-    	String[] aux_out;
+		this.COUNTTYPES		= new int[4];
     	
-    	//Loop 0 to 3 where 0 = Fine, 1 = Info, 2 = Warning and 3 = Error 
-		for (int i = 0; i < 4; i++)
-		{
-			switch (i)
-			{
-				case 0:	
-					aux_typ = "Fine";
-					break;
-				case 1:	
-					aux_typ = "Info";
-					break;
-				case 2:	
-					aux_typ = "Warning";
-					break;
-				case 3:	
-					aux_typ = "Error";
-					break;
-			}
-	    	CmdLine cmd = new CmdLine("cmd /C FIND /I /C " + "\"" + aux_search.replace("@TYPE", aux_typ) + "\" \"" + aux_filename + "\"");
-			
-	    	if (cmd.getGetOutList().size() >= 0)
-	    	{
-	    		aux_out = cmd.getGetOutList().get(0).split(":");
-	    		if (aux_out.length == 2)
-	    			this.COUNTTYPES[i] = this.COUNTTYPES[i] + Integer.parseInt(aux_out[1].trim());
-	    	}
-		}
+    	// Open the file
+    	FileInputStream fstream = new FileInputStream(aux_filename);
+    	BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
+
+    	String strLine;
+
+    	//Read File Line By Line
+    	while ((strLine = br.readLine()) != null)
+    	{
+    		if (strLine.indexOf(search[0]) > 0) this.COUNTTYPES[0]++;
+    		if (strLine.indexOf(search[1]) > 0) this.COUNTTYPES[1]++;
+    		if (strLine.indexOf(search[2]) > 0) this.COUNTTYPES[2]++;
+    		if (strLine.indexOf(search[3]) > 0) this.COUNTTYPES[3]++;
+    	}
+
+    	//Close the input stream
+    	br.close();
+    	
 		int totTypes = this.COUNTTYPES[0] + this.COUNTTYPES[1] + this.COUNTTYPES[2] + this.COUNTTYPES[3];
 		double pFine = ((double)this.COUNTTYPES[0] / (double)totTypes) * 100;
 		double pInfo = ((double)this.COUNTTYPES[1] / (double)totTypes) * 100;
@@ -115,5 +107,6 @@ public class ICCcheckHistory extends ICCcheck {
 
 		double[] vtotTypes = {pFine, pInfo, pWarn, pErro};
 		return vtotTypes;
-    }	
+    }
+    
 }

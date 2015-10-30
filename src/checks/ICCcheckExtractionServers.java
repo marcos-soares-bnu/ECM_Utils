@@ -10,12 +10,14 @@ public class ICCcheckExtractionServers extends ICCcheck {
         super(wmi);        
     }
     
-    public void checkExtraction(String fileExtraction) throws Throwable {
+    public void checkExtraction(String fileExtraction, String[] fFilter) throws Throwable {
 
     	String aux_search = SEARCH_LINE.replace("@TYPE", "Error").replace("@HOST", this.wmi.getHost());
 
-    	//Exec generic function to generate output from search in LISTOFFILES with filters...
-    	this.outputSearchInListOfFiles(aux_search, "extraction.server", (super.ICCFILE_PREFIX + ".sea.cmd"), fileExtraction);
-    	this.outputSearchInListOfFiles(aux_search, "hotspot", (super.ICCFILE_PREFIX + ".sea.cmd"), fileExtraction);
+    	for (String ff : fFilter)
+    	{
+        	//Exec generic function to generate output from search in LISTOFFILES with filters...
+        	this.outputSearchInListOfFiles(aux_search, ff, fileExtraction);
+		}
     }
 }

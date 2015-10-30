@@ -47,7 +47,7 @@ public class ICCcheckExec {
         	WmiConsole wmi = new WmiConsole();
         	wmi = setInitVars();
         	wmi.setDelay(5000); //Set a delay time to run slow process...
-			
+        	
         	//Check Logs record SERVICE...
         	chkService(wmi);
 
@@ -102,7 +102,11 @@ public class ICCcheckExec {
 		ICCcheckExtractionServers iccExtraction = new ICCcheckExtractionServers(wmi);
 		iccExtraction.setLISTOFFILES(iccInit.LISTOFFILES);
 		iccExtraction.setICCFILE_PREFIX(iccInit.ICCFILE_PREFIX);
-		iccExtraction.checkExtraction(iccInit.getICCFILE_PREFIX() + ".ext");
+		//
+		String[] filesFilter 	= new String[2];
+		filesFilter[0] 			= "Extraction.Server";
+		filesFilter[0] 			= "HotSpot";
+		iccExtraction.checkExtraction(iccInit.getICCFILE_PREFIX() + ".ext", filesFilter);
     }
     public static void check_V(WmiConsole wmi, ICCcheck iccInit) throws Throwable
     {
@@ -229,7 +233,7 @@ public class ICCcheckExec {
     	
     	//Copy / Check Logs Files found and generate Error List File for All Logs...
     	iccInit.copyListLocal(iccInit.getICCFILE_PREFIX() + ".cop.cmd");
-    	iccInit.outputSearchInListOfFiles("Error: " + wmi.getHost(), "", (iccInit.getICCFILE_PREFIX() + ".sea.cmd"), (iccInit.getICCFILE_PREFIX() + ".err") );
+    	iccInit.outputSearchInListOfFiles("Error: " + wmi.getHost(), "", (iccInit.getICCFILE_PREFIX() + ".err") );
     	
     	return iccInit;
     }
@@ -246,5 +250,4 @@ public class ICCcheckExec {
     }
     
 //*********************************************************************************************************************
-    
 }

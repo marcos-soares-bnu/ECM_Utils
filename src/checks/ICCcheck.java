@@ -1,7 +1,10 @@
 package checks;
 
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -196,15 +199,35 @@ public class ICCcheck {
 		cmd = new CmdLine("cmd /C " + fileCmd);
 	}
 	
-	public void outputSearchInListOfFiles(String textSearch, String filterFile, String fileCmd, String fileOut) throws Throwable
+	public String linesMatchSearchFile(String txt_search, String aux_filename) throws IOException
+	{
+		String aux_return = "";
+		
+    	// Open the file
+    	FileInputStream fstream = new FileInputStream(aux_filename);
+    	BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
+
+    	String strLine;
+
+    	//Read File Line By Line
+    	while ((strLine = br.readLine()) != null)
+    	{
+    		if (strLine.indexOf(txt_search) > 0) aux_return += strLine + "\n";
+    	}
+    	//Close the input stream
+    	br.close();
+
+		return aux_return;
+	}
+	
+	public void outputSearchInListOfFiles(String txt_search, String filterFile, String fileOut) throws Throwable
 	{
 		//Write CMD to copy all LOG's files...
-		String aux_cmd			= "";
-		File dirlocal			= new File(".");
-    	FileWriter writer		= new FileWriter(fileCmd);
+    	FileWriter writer		= new FileWriter(fileOut, true); //true = append to fileOut...
 		String aux_filename 	= ""; 
 		String aux_pathname 	= ""; 
 		String[] aux_filepath;
+		String aux_lines		= "";
 		
 		for (String attFile[] : this.LISTOFFILES)
 		{
@@ -212,23 +235,19 @@ public class ICCcheck {
 			aux_filepath 		= aux_pathname.replace("\\", "/").split("/");
 			if (aux_filepath.length > 0 )
 			{
-	    		aux_filename 	= dirlocal.getCanonicalPath() + "\\" + aux_filepath[aux_filepath.length - 1];
+	    		aux_filename 	= aux_filepath[aux_filepath.length - 1];
 
 	    		//Filter per filterFile... if empty no filter applied...
-	    		if ( (filterFile.equals("")) || (aux_filename.contains(filterFile)) )
+	    		if ( (filterFile.equals("")) || (aux_filename.toLowerCase().indexOf(filterFile.toLowerCase()) >= 0) )
 	    		{
 		    		//*** Print the name of LOG with errors
-					aux_cmd			= "ECHO LogFile: " + aux_pathname  + " >> " + fileOut + " \n";
-					aux_cmd			= aux_cmd + "FINDSTR /I /C:" + "\"" + textSearch + "\" \"" + aux_filename + "\" >> " + fileOut + " \n";
-					aux_cmd			= aux_cmd + "ECHO. >> " + fileOut + " \n";
-		    		writer.write(aux_cmd + " \n");
+	    			writer.write("LogFile: " + aux_pathname + " \n");
+	    			aux_lines = linesMatchSearchFile(txt_search, aux_filename);
+	    			writer.write(aux_lines + " \n");
 	    		}
 			}
 		}
 		writer.close();
-		
-		//Execute CMD to copy all LOG's files...
-		cmd = new CmdLine("cmd /C " + fileCmd);
 	}
 	
     public void debugSysOut(String var, String val)
