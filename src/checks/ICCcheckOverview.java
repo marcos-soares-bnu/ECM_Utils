@@ -49,17 +49,19 @@ public class ICCcheckOverview extends ICCcheck {
     				if (aux_state.equals("Ready"))
     					aux_output 			= aux_output.replace("@STNR", "FALSE");
     				else
+    				{
     					aux_output 			= aux_output.replace("@STNR", "TRUE");
     				
-                    //Write type File...
-            		String sw =	aux_output 				+ 
-            	    			(" \\State\\ " 			+ this.aux_state)	+
-            	    			(" \\Name\\ "			+ this.aux_name)	+
-            	    			(" \\Profile\\ " 		+ this.aux_optname)	+
-            	    			(" \\Client\\ " 		+ this.aux_client)	+
-            	    			(" \\Label\\ " 			+ this.aux_label);
-
-            		writer.write(sw + "\n");
+	                    //Write type File...
+	            		String sw =	aux_output 				+ 
+	            	    			(" \\State\\ " 			+ this.aux_state)	+
+	            	    			(" \\Name\\ "			+ this.aux_name)	+
+	            	    			(" \\Profile\\ " 		+ this.aux_optname)	+
+	            	    			(" \\Client\\ " 		+ this.aux_client)	+
+	            	    			(" \\Label\\ " 			+ this.aux_label);
+	
+	            		writer.write(sw + "\n");
+    				}
     			}
 
             	aux_output = "\\statusNotReady\\ @STNR";

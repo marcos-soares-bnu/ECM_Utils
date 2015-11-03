@@ -27,7 +27,7 @@ public class ICCcheckExec {
     {
     	if (args.length < 5)
         {
-            System.out.println("*** USAGE: java -jar ICCcheck \"Host(Server)\" \"Service(Chk)\" \"Process(Chk)\" \"Drive[:\\path](search Logs)\" \"[-x][-v][-n][-o][-h][-all]\" \"EXECID(ID for temp files, if empty ID=test)\"");
+            System.out.println("*** USAGE: java -jar ICCcheckExec \"Host(Server)\" \"Service(Chk)\" \"Process(Chk)\" \"Drive[:\\path](search Logs)\" \"[-x][-v][-n][-o][-h][-all]\" \"EXECID(ID for temp files, if empty ID=test)\"");
             System.exit(1);
         }
     	else
@@ -86,10 +86,8 @@ public class ICCcheckExec {
 				default:
 					break;
 			}
-        	
         	//Exit Completed...
         	wmi.debugSysOut("Execution Status: ", "Completed!");
-        	
         } 
         catch (Throwable t)
         {
@@ -232,7 +230,7 @@ public class ICCcheckExec {
     	iccInit.setLISTOFFILES();
 
 		//Set File pattern...
-    	iccInit.setICCFILE_PREFIX("ICCcheck.tmp." + wmi.getHost() + "." + sdateOSFile + "." + PAR6); //PAR6 = EXECID...
+    	iccInit.setICCFILE_PREFIX("ICCcheck.tmp." + wmi.getHost() + "." + PAR6); //PAR6 = EXECID...
 		wmi.setDelay(0); //Set a delay time to exec process...
     	
     	//Copy / Check Logs Files found and generate Error List File for All Logs...

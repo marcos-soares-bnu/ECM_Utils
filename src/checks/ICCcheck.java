@@ -240,10 +240,13 @@ public class ICCcheck {
 	    		//Filter per filterFile... if empty no filter applied...
 	    		if ( (filterFile.equals("")) || (aux_filename.toLowerCase().indexOf(filterFile.toLowerCase()) >= 0) )
 	    		{
-		    		//*** Print the name of LOG with errors
-	    			writer.write("LogFile: " + aux_pathname + " \n");
 	    			aux_lines = linesMatchSearchFile(txt_search, aux_filename);
-	    			writer.write(aux_lines + " \n");
+	    			if (aux_lines.length() > 0)
+	    			{
+			    		//*** Print the name of LOG with errors
+		    			writer.write("LogFile: " + aux_pathname + " \n");
+		    			writer.write(aux_lines + " \n");
+	    			}
 	    		}
 			}
 		}
