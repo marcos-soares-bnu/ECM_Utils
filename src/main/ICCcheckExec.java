@@ -227,7 +227,10 @@ public class ICCcheckExec {
     {
     	//Create ICCcheck instance and set LISTOFFILES (DOKuStar)...
     	ICCcheck iccInit = new ICCcheck(wmi, listPIDs);
-    	iccInit.setLISTOFFILES();
+
+    	//MPS - 4/11/2015 - New implementation of LISTOFFILES, checking a File exists first...
+    	String fileLOF = "ICCcheck.tmp." + wmi.getHost() + ".LISTOFFILES";
+		iccInit.setLISTOFFILES(fileLOF);
 
 		//Set File pattern...
     	iccInit.setICCFILE_PREFIX("ICCcheck.tmp." + wmi.getHost() + "." + PAR6); //PAR6 = EXECID...
@@ -239,6 +242,7 @@ public class ICCcheckExec {
     	
     	return iccInit;
     }
+
     
     public static void writeExitErrOut(String tag, String msg) throws Throwable
     {

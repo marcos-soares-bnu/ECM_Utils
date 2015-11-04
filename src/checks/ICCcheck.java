@@ -1,6 +1,7 @@
 package checks;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -152,12 +153,24 @@ public class ICCcheck {
 		this.setLISTOFPIDS(ListPids);
 	}
 	
-	public void setLISTOFFILES() throws Throwable
+	//MPS - 4/11/2015
+	public void setLISTOFFILES(String fileLOF) throws Throwable
 	{
-		//Get All LOG Files with dateOS... so filter for PIDS List...
-		this.wmi.getWmicDataFileName();
-		List<String> listFiles 		= this.wmi.getGetWmiOutList();
+		List<String> listFiles;
+    	List<String> lstLOF = chkRecFileLOF(fileLOF);
+    	
+    	if (lstLOF.isEmpty())
+    	{
+    		//Get All LOG Files with dateOS... so filter for PIDS List...
+    		this.wmi.getWmicDataFileName();
+    		listFiles = this.wmi.getGetWmiOutList();
+    	}
+    	else
+    	{
+    		listFiles = lstLOF;
+    	}
 
+    	FileWriter writer = new FileWriter(fileLOF);
 		for (String sLogName : listFiles) {
 
 			String[] sPID			= sLogName.split("\\.");
@@ -174,9 +187,37 @@ public class ICCcheck {
 				this.ATTOFFILES[3] 	= "0";
 				this.ATTOFFILES[4] 	= "0";
 				this.ATTOFFILES[5] 	= "0";
-				this.LISTOFFILES.add(this.ATTOFFILES);				
+				this.LISTOFFILES.add(this.ATTOFFILES);
+				//
+	    		writer.write(sLogName + " \n");
 			}
 		}
+		writer.close();
+	}
+	
+	//MPS - 4/11/2015
+	private List<String> chkRecFileLOF(String fileLOF) throws Throwable
+	{
+    	List<String> listLOF = new ArrayList<String>(); 
+
+    	File f = new File(fileLOF);
+    	String strLine;
+    	if (f.exists())
+    	{
+    		if (f.length() > 0)
+    		{
+    	    	// Open the file
+    	    	FileInputStream fstream = new FileInputStream(fileLOF);
+    	    	BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
+
+    	    	//Read File Line By Line
+    	    	while ((strLine = br.readLine()) != null) { listLOF.add(strLine); }
+
+    	    	//Close the input stream
+    	    	br.close();
+    		}
+    	}
+    	return listLOF;
 	}
 	
 	public void copyListLocal(String fileCmd) throws Throwable
