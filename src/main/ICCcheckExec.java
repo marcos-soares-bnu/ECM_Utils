@@ -12,22 +12,24 @@ public class ICCcheckExec {
 
 	
 //*** VARs ************************************************************************************************************
-	public static String PAR1		= "";
-	public static String PAR2		= "";
-	public static String PAR3		= "";
-	public static String PAR4		= "";
-	public static String PAR5		= "";
-	public static String PAR6		= "test";
-	public static String sdateOS;
-	public static String sdateOSFile;
+	public static String 	PAR1	= "";		//Host(Server)
+	public static String 	PAR2	= "";		//Service(Chk)
+	public static String 	PAR3	= "";		//Process(Chk)
+	public static String 	PAR4	= "";		//Drive[:\\path](search Logs)
+	public static String 	PAR5	= "";		//[-x][-v][-n][-o][-h][-all]
+	public static int		PAR6	= 0;		//MAXTIMEPROC
+	public static int 		PAR7	= 0;		//MAXPERCERR
+	public static String 	PAR8	= "test";	//EXECID
+	public static String 	sdateOS;
+	public static String 	sdateOSFile;
 	
 //*** MAIN ************************************************************************************************************
 	
     public static void main(String args[]) throws Throwable
     {
-    	if (args.length < 5)
+    	if (args.length < 7)
         {
-            System.out.println("*** USAGE: java -jar ICCcheckExec \"Host(Server)\" \"Service(Chk)\" \"Process(Chk)\" \"Drive[:\\path](search Logs)\" \"[-x][-v][-n][-o][-h][-all]\" \"EXECID(ID for temp files, if empty ID=test)\"");
+            System.out.println("*** USAGE: java -jar ICCcheckExec \"Host(Server)\" \"Service(Chk)\" \"Process(Chk)\" \"Drive[:\\path](search Logs)\" \"[-x][-v][-n][-o][-h][-all]\" \"MAXTIMEPROC\" \"MAXPERCERR\" \"EXECID(ID for temp files, if empty ID=test)\"");
             System.exit(1);
         }
     	else
@@ -37,8 +39,10 @@ public class ICCcheckExec {
     		PAR3 = args[2];
     		PAR4 = args[3];
 			PAR5 = args[4];
-    		if (args.length > 5)
-    			PAR6 = args[5];
+			PAR6 = Integer.parseInt(args[5]);
+			PAR7 = Integer.parseInt(args[6]);
+    		if (args.length > 7)
+    			PAR8 = args[7];
     	}
     		
         try
@@ -118,19 +122,19 @@ public class ICCcheckExec {
     }
     public static void check_N(WmiConsole wmi, ICCcheck iccInit) throws Throwable
     {
-		ICCcheckClusterNodes iccClusternodes = new ICCcheckClusterNodes(wmi, 10); //MAX_DTDIFF
+		ICCcheckClusterNodes iccClusternodes = new ICCcheckClusterNodes(wmi, PAR6); //MAXTIMEPROC
 		iccClusternodes.setLISTOFFILES(iccInit.LISTOFFILES);
 		iccClusternodes.checkClusterNodes(iccInit.getICCFILE_PREFIX() + ".cln");
     }
     public static void check_O(WmiConsole wmi, ICCcheck iccInit) throws Throwable
     {
-		ICCcheckOperations iccOperations = new ICCcheckOperations(wmi, 10); //MAX_DTDIFF
+		ICCcheckOperations iccOperations = new ICCcheckOperations(wmi, PAR6); //MAXTIMEPROC
 		iccOperations.setLISTOFFILES(iccInit.LISTOFFILES);
 		iccOperations.checkOperations(iccInit.getICCFILE_PREFIX() + ".ops");
     }
     public static void check_H(WmiConsole wmi, ICCcheck iccInit) throws Throwable
     {
-		ICCcheckHistory iccHistory = new ICCcheckHistory(wmi, 5); //MAX_PERERR
+		ICCcheckHistory iccHistory = new ICCcheckHistory(wmi, PAR7); //MAXPERCERR
 		iccHistory.setLISTOFFILES(iccInit.LISTOFFILES);
 		iccHistory.checkHistory(iccInit.getICCFILE_PREFIX() + ".hst");
     }
@@ -202,8 +206,8 @@ public class ICCcheckExec {
 			}
     	}
 		//Debug SysOut...
-    	String[] vars	= {"DATEOS", "HOST", "SERVICE", "PROCESS", "LOCALPATH", "CHECK", "EXECID"};
-    	String[] vals 	= {sdateOS, PAR1, PAR2, PAR3, wmi.getDrive() + wmi.getPath(), PAR5, PAR6};
+    	String[] vars	= {"DATEOS", "HOST", "SERVICE", "PROCESS", "LOCALPATH", "CHECK", "MAXTIMEPROC(min)", "MAXPERCERR(%)", "EXECID"};
+    	String[] vals 	= {sdateOS, PAR1, PAR2, PAR3, wmi.getDrive() + wmi.getPath(), PAR5, String.valueOf(PAR6), String.valueOf(PAR7), PAR8};
     	wmi.debugSysOut(vars, vals);
     }
 
@@ -233,7 +237,7 @@ public class ICCcheckExec {
 		iccInit.setLISTOFFILES(fileLOF);
 
 		//Set File pattern...
-    	iccInit.setICCFILE_PREFIX("ICCcheck.tmp." + wmi.getHost() + "." + PAR6); //PAR6 = EXECID...
+    	iccInit.setICCFILE_PREFIX("ICCcheck.tmp." + wmi.getHost() + "." + PAR8); //PAR8 = EXECID...
 		wmi.setDelay(0); //Set a delay time to exec process...
     	
     	//Copy / Check Logs Files found and generate Error List File for All Logs...
