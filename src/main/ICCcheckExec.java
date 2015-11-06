@@ -1,5 +1,6 @@
 package main;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -240,9 +241,14 @@ public class ICCcheckExec {
     	iccInit.setICCFILE_PREFIX("ICCcheck.tmp." + wmi.getHost() + "." + PAR8); //PAR8 = EXECID...
 		wmi.setDelay(0); //Set a delay time to exec process...
     	
-    	//Copy / Check Logs Files found and generate Error List File for All Logs...
-    	iccInit.copyListLocal(iccInit.getICCFILE_PREFIX() + ".cop.cmd");
-    	iccInit.outputSearchInListOfFiles("Error: " + wmi.getHost(), "", (iccInit.getICCFILE_PREFIX() + ".err") );
+		//MPS - 6/11/2015 - Copy only if cop.cmd no exists...
+		File f = new File(iccInit.getICCFILE_PREFIX() + ".cop.cmd");
+		if(!f.exists())
+		{ 
+	    	//Copy / Check Logs Files found and generate Error List File for All Logs...
+	    	iccInit.copyListLocal(iccInit.getICCFILE_PREFIX() + ".cop.cmd");
+	    	iccInit.outputSearchInListOfFiles("Error: " + wmi.getHost(), "", (iccInit.getICCFILE_PREFIX() + ".err") );
+		}		
     	
     	return iccInit;
     }
