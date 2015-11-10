@@ -4,7 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.security.PrivateKey;
+//import java.security.PrivateKey;
 import java.security.PublicKey;
 
 import database.DBUtil;
@@ -18,8 +18,8 @@ public class OTASSUserEncription {
         final PublicKey chavePublica;
         byte[] textoCriptografado = null;
         
-        final PrivateKey chavePrivada;
-        final String textoPuro;
+//        final PrivateKey chavePrivada;
+//        final String textoPuro;
         
      // Criptografa a Mensagem usando a Chave Pública
         try {
